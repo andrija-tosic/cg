@@ -17,8 +17,6 @@ protected:
 
 	double GetDistance(POINT a, POINT b);
 	void DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, int n, COLORREF fillColor, COLORREF borderColor);
-	void DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c);
-	void DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, tagLOGBRUSH brush);
 	void DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, COLORREF fill = NULL);
 	void DrawPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, COLORREF fill);
 	void DrawSquare(CDC* pDC, POINT a, int width, COLORREF color, COLORREF fill, float rotAngle = 0);

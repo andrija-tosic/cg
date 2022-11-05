@@ -72,42 +72,43 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	// pozadina
 
-	constexpr int BGCOLOR = RGB(221, 221, 221);
+	constexpr COLORREF BGCOLOR = RGB(221, 221, 221);
 
 	CRect rect(0, 0, dim, dim);
 	CBrush background(BGCOLOR);
 	pDC->FillRect(&rect, &background);
 
 	// roze trougao
-	
-	constexpr int PINK = RGB(255, 153, 204);
-	constexpr int BORDER_GREEN = RGB(13, 255, 13);
+
+	constexpr COLORREF PINK = RGB(255, 153, 204);
+	constexpr COLORREF BORDER_GREEN = RGB(13, 255, 13);
 
 	POINT rozeTrougaoA = { squareLength, squareLength };
 	POINT rozeTrougaoB = { 13 * squareLength, squareLength };
 	POINT rozeTrougaoC = { squareLength, 13 * squareLength };
 
+	POINT tacke[] = { rozeTrougaoA, rozeTrougaoB, rozeTrougaoC };
 
 	this->DrawTriangle(pDC, rozeTrougaoA, rozeTrougaoB, rozeTrougaoC, BORDER_GREEN, PINK);
 
 	// beli kvadrat
 
-	this->DrawSquare(pDC, { 13*squareLength, squareLength }, squareLength * (squareCount - 13 - 1), BORDER_GREEN, RGB(255, 255, 255), 0);
+	this->DrawSquare(pDC, { 13 * squareLength, squareLength }, squareLength * (squareCount - 13 - 1), BORDER_GREEN, RGB(255, 255, 255), 0);
 
 	// plave linije u belom kvadratu
 
-	constexpr int BLUE = RGB(102, 153, 255);
+	constexpr COLORREF BLUE = RGB(102, 153, 255);
 
 	CPen pen(PS_SOLID | PS_GEOMETRIC, 1, BLUE);
 
 	CPen* prevPen = pDC->SelectObject(&pen);
 
-	double offset = 3.0/2.0;
+	double offset = 3.0 / 2.0;
 
 	for (int i = 0; i < 6 * 3 - 1; i++) {
-		
+
 		double x1 = squareLength * 13 + offset;
-		double y = squareLength*4/3 + (squareLength*i)/3;
+		double y = squareLength * 4.0 / 3.0 + (squareLength * i) / 3.0;
 
 		double x2 = squareLength * (squareCount - 1) - offset;
 
@@ -143,8 +144,8 @@ void CIND18015View::OnDraw(CDC* pDC)
 	this->DrawInscribedPolygon(pDC, zutiTrougaoA, zutiTrougaoB, zutiTrougaoC, 6, RGB(255, 255, 0), BORDER_GREEN);
 
 	// zeleni trougao
-	
-	constexpr int TRIANGLE_GREEN = RGB(50, 205, 50);
+
+	constexpr COLORREF TRIANGLE_GREEN = RGB(50, 205, 50);
 
 	POINT zeleniTrougaoA = { squareLength, 13 * squareLength };
 	POINT zeleniTrougaoB = { 7 * squareLength, 13 * squareLength };
@@ -155,25 +156,25 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	// narandzasti trougao
 
-	COLORREF TRIANGLE_ORANGE = RGB(255, 153, 51);
+	constexpr COLORREF TRIANGLE_ORANGE = RGB(255, 153, 51);
 
 	POINT narandzastiTrougaoA = { squareLength, (squareCount - 1) * squareLength };
 	POINT narandzastiTrougaoB = { 7 * squareLength, 13 * squareLength };
-	POINT narandzastiTrougaoC = { 13*squareLength , (squareCount - 1) * squareLength };
+	POINT narandzastiTrougaoC = { 13 * squareLength , (squareCount - 1) * squareLength };
 
 	this->DrawTriangle(pDC, narandzastiTrougaoA, narandzastiTrougaoB, narandzastiTrougaoC, BORDER_GREEN, TRIANGLE_ORANGE);
 	this->DrawInscribedPolygon(pDC, narandzastiTrougaoA, narandzastiTrougaoB, narandzastiTrougaoC, 7, TRIANGLE_ORANGE, BORDER_GREEN);
 
 	// ljubicasti romb
 
-	constexpr int PURPLE = RGB(153, 0, 204);
+	constexpr COLORREF PURPLE = RGB(153, 0, 204);
 
 	POINT qA = { squareLength * 7, squareLength * 7 };
 	POINT qB = { squareLength * 7, squareLength * 13 };
-	POINT qC = { squareLength * 13, squareLength * (squareCount - 1)};
+	POINT qC = { squareLength * 13, squareLength * (squareCount - 1) };
 	POINT qD = { squareLength * 13, squareLength * 13 };
 
-	this->DrawQuadrilateral(pDC, qA,qB,qC,qD, BORDER_GREEN, PURPLE);
+	this->DrawQuadrilateral(pDC, qA, qB, qC, qD, BORDER_GREEN, PURPLE);
 
 	constexpr int GRID_GREY = RGB(238, 238, 238);
 
@@ -267,28 +268,9 @@ void CIND18015View::DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, in
 
 	CPen pen(PS_SOLID | PS_GEOMETRIC, 3, borderColor);
 	CPen* prevPen = pDC->SelectObject(&pen);
-	
+
 	DrawRegularPolygon(pDC, cx, cy, r / 2, n, 0);
-	
-	pDC->SelectObject(prevPen);
-	pDC->SelectObject(prevBrush);
-}
 
-void CIND18015View::DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c)
-{
-	POINT vertices[] = { a, b, c };
-	pDC->Polygon(vertices, 3);
-}
-
-void CIND18015View::DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, tagLOGBRUSH brush)
-{
-	CPen pen(PS_SOLID | PS_GEOMETRIC, 5, color);
-	CBrush newBrush;
-	newBrush.CreateBrushIndirect(&brush);
-
-	CPen* prevPen = pDC->SelectObject(&pen);
-	CBrush* prevBrush = pDC->SelectObject(&newBrush);
-	this->DrawTriangle(pDC, a, b, c);
 	pDC->SelectObject(prevPen);
 	pDC->SelectObject(prevBrush);
 }
@@ -300,8 +282,9 @@ void CIND18015View::DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF c
 
 	CPen* prevPen = pDC->SelectObject(&newPen);
 	CBrush* prevBrush = pDC->SelectObject(&newBrush);
-	
-	DrawTriangle(pDC, a, b, c);
+
+	POINT vertices[] = { a, b, c };
+	pDC->Polygon(vertices, 3);
 
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);
@@ -330,7 +313,7 @@ void CIND18015View::DrawSquare(CDC* pDC, POINT a, int length, COLORREF color, CO
 
 	length *= sqrt(2);
 	DrawRegularPolygon(pDC, a.x + ceil(length / (sqrt(2) * 2)), a.y + ceil(length / (sqrt(2) * 2)), length / 2, 4, rotAngle + 45);
-	
+
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);
 }
@@ -379,19 +362,19 @@ void CIND18015View::DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF
 }
 
 void CIND18015View::DrawQuadrilateral(CDC* pDC, POINT a, POINT b, POINT c, POINT d, COLORREF color, COLORREF fill)
-	{
-		CPen pen(PS_SOLID | PS_GEOMETRIC, 5, color);
-		CPen* prevPen = pDC->SelectObject(&pen);
+{
+	CPen pen(PS_SOLID | PS_GEOMETRIC, 5, color);
+	CPen* prevPen = pDC->SelectObject(&pen);
 
-		CBrush brush(fill);
-		CBrush* prevBrush = pDC->SelectObject(&brush);
+	CBrush brush(fill);
+	CBrush* prevBrush = pDC->SelectObject(&brush);
 
-		POINT vertices[] = { a, b, c, d };
-		pDC->Polygon(vertices, 4);
+	POINT vertices[] = { a, b, c, d };
+	pDC->Polygon(vertices, 4);
 
-		pDC->SelectObject(prevPen);
-		pDC->SelectObject(prevBrush);
-	}
+	pDC->SelectObject(prevPen);
+	pDC->SelectObject(prevBrush);
+}
 
 
 void CIND18015View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
