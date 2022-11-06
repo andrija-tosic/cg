@@ -93,33 +93,15 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	// beli kvadrat
 
-	this->DrawSquare(pDC, { 13 * squareLength, squareLength }, squareLength * (squareCount - 13 - 1), BORDER_GREEN, RGB(255, 255, 255), 0);
+	//this->DrawSquare(pDC, { 13 * squareLength, squareLength }, squareLength * (squareCount - 13 - 1), BORDER_GREEN, RGB(255, 255, 255), 0);
 
 	// plave linije u belom kvadratu
 
 	constexpr COLORREF BLUE = RGB(102, 153, 255);
+	constexpr POINT hatchedSquareA = { squareLength * 13, squareLength };
+	constexpr int hatchedSquareLength = squareLength * 6;
 
-	CPen pen(PS_SOLID | PS_GEOMETRIC, 1, BLUE);
-
-	CPen* prevPen = pDC->SelectObject(&pen);
-
-	double offset = 3.0 / 2.0;
-
-	for (int i = 0; i < 6 * 3 - 1; i++) {
-
-		double x1 = squareLength * 13 + offset;
-		double y = squareLength * 4.0 / 3.0 + (squareLength * i) / 3.0;
-
-		double x2 = squareLength * (squareCount - 1) - offset;
-
-		POINT a = { x1, y };
-		POINT b = { x2, y };
-
-		pDC->MoveTo(a);
-		pDC->LineTo(b);
-	}
-
-	pDC->SelectObject(prevPen);
+	this->DrawSquareHatched(pDC, hatchedSquareA, hatchedSquareLength, BORDER_GREEN, BLUE, 0);
 
 	// mnogougao u roze trouglu
 
@@ -312,12 +294,26 @@ void CIND18015View::DrawSquare(CDC* pDC, POINT a, int length, COLORREF color, CO
 	CBrush* prevBrush = pDC->SelectObject(&newBrush);
 
 	length *= sqrt(2);
-	DrawRegularPolygon(pDC, a.x + ceil(length / (sqrt(2) * 2)), a.y + ceil(length / (sqrt(2) * 2)), length / 2, 4, rotAngle + 45);
+	this->DrawRegularPolygon(pDC, a.x + ceil(length / (sqrt(2) * 2)), a.y + ceil(length / (sqrt(2) * 2)), length / 2, 4, rotAngle + 45);
 
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);
 }
 
+void CIND18015View::DrawSquareHatched(CDC* pDC, POINT a, int length, COLORREF color, COLORREF fill, float rotAngle)
+{
+	CPen newPen(PS_SOLID | PS_GEOMETRIC, 5, color);
+	CBrush hatchBrush(HS_HORIZONTAL, fill);
+
+	CPen* prevPen = pDC->SelectObject(&newPen);
+	CBrush* prevBrush = pDC->SelectObject(&hatchBrush);
+
+	length *= sqrt(2);
+	this->DrawRegularPolygon(pDC, a.x + ceil(length / (sqrt(2) * 2)), a.y + ceil(length / (sqrt(2) * 2)), length / 2, 4, rotAngle + 45);
+
+	pDC->SelectObject(prevBrush);
+	pDC->SelectObject(prevPen);
+}
 void CIND18015View::DrawRegularPolygon(CDC* pDC, int cx, int cy, int r, int n, float rotAngle)
 {
 	double rotAngleRad = RAD(rotAngle);
