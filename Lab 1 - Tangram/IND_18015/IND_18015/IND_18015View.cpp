@@ -87,21 +87,21 @@ void CIND18015View::OnDraw(CDC* pDC)
 	POINT rozeTrougaoB = { 13 * squareLength, squareLength };
 	POINT rozeTrougaoC = { squareLength, 13 * squareLength };
 
-	POINT tacke[] = { rozeTrougaoA, rozeTrougaoB, rozeTrougaoC };
-
 	this->DrawTriangle(pDC, rozeTrougaoA, rozeTrougaoB, rozeTrougaoC, BORDER_GREEN, PINK);
-
-	// beli kvadrat
-
-	//this->DrawSquare(pDC, { 13 * squareLength, squareLength }, squareLength * (squareCount - 13 - 1), BORDER_GREEN, RGB(255, 255, 255), 0);
 
 	// plave linije u belom kvadratu
 
 	constexpr COLORREF BLUE = RGB(102, 153, 255);
-	constexpr POINT hatchedSquareA = { squareLength * 13, squareLength };
+	constexpr POINT hatchedSquareA = { squareLength * 13, squareLength }; 
+	constexpr POINT hatchedSquareB = { squareLength * (squareCount - 1), squareLength }; 
+	constexpr POINT hatchedSquareC = { squareLength * (squareCount - 1), 7 * squareLength };
+	constexpr POINT hatchedSquareD = { squareLength * 13, 7 * squareLength }; 
+
+	POINT hatchedSquareVertices[] = {hatchedSquareA , hatchedSquareB, hatchedSquareC, hatchedSquareD};
+
 	constexpr int hatchedSquareLength = squareLength * 6;
 
-	this->DrawSquareHatched(pDC, hatchedSquareA, hatchedSquareLength, BORDER_GREEN, BLUE, 0);
+	this->DrawHatchedPolygon(pDC, hatchedSquareVertices, 4, BORDER_GREEN, HS_HORIZONTAL, BLUE);
 
 	// mnogougao u roze trouglu
 
@@ -245,11 +245,11 @@ void CIND18015View::DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, in
 	double cx = (cLen * c.x + bLen * b.x + aLen * a.x) / sum + 0.5;
 	double cy = (cLen * c.y + bLen * b.y + aLen * a.y) / sum + 0.5;
 
-	CBrush brush(fillColor);
-	CBrush* prevBrush = pDC->SelectObject(&brush);
-
 	CPen pen(PS_SOLID | PS_GEOMETRIC, 3, borderColor);
+	CBrush brush(fillColor);
+
 	CPen* prevPen = pDC->SelectObject(&pen);
+	CBrush* prevBrush = pDC->SelectObject(&brush);
 
 	DrawRegularPolygon(pDC, cx, cy, r / 2, n, 0);
 
@@ -279,37 +279,23 @@ void CIND18015View::DrawPolygon(CDC* pDC, POINT points[], int numOfPoints, COLOR
 
 	CPen* prevPen = pDC->SelectObject(&newPen);
 	CBrush* prevBrush = pDC->SelectObject(&newBrush);
+	
 	pDC->Polygon(points, numOfPoints);
+	
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);
 
 }
 
-void CIND18015View::DrawSquare(CDC* pDC, POINT a, int length, COLORREF color, COLORREF fill, float rotAngle)
+void CIND18015View::DrawHatchedPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, int hatchStyle, COLORREF fill)
 {
 	CPen newPen(PS_SOLID | PS_GEOMETRIC, 5, color);
-	CBrush newBrush(fill);
-
-	CPen* prevPen = pDC->SelectObject(&newPen);
-	CBrush* prevBrush = pDC->SelectObject(&newBrush);
-
-	length *= sqrt(2);
-	this->DrawRegularPolygon(pDC, a.x + ceil(length / (sqrt(2) * 2)), a.y + ceil(length / (sqrt(2) * 2)), length / 2, 4, rotAngle + 45);
-
-	pDC->SelectObject(prevBrush);
-	pDC->SelectObject(prevPen);
-}
-
-void CIND18015View::DrawSquareHatched(CDC* pDC, POINT a, int length, COLORREF color, COLORREF fill, float rotAngle)
-{
-	CPen newPen(PS_SOLID | PS_GEOMETRIC, 5, color);
-	CBrush hatchBrush(HS_HORIZONTAL, fill);
+	CBrush hatchBrush(hatchStyle, fill);
 
 	CPen* prevPen = pDC->SelectObject(&newPen);
 	CBrush* prevBrush = pDC->SelectObject(&hatchBrush);
 
-	length *= sqrt(2);
-	this->DrawRegularPolygon(pDC, a.x + ceil(length / (sqrt(2) * 2)), a.y + ceil(length / (sqrt(2) * 2)), length / 2, 4, rotAngle + 45);
+	pDC->Polygon(points, numOfPoints);
 
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);

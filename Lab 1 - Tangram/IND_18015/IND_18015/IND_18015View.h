@@ -19,8 +19,7 @@ protected:
 	void DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, int n, COLORREF fillColor, COLORREF borderColor);
 	void DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, COLORREF fill = NULL);
 	void DrawPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, COLORREF fill);
-	void DrawSquare(CDC* pDC, POINT a, int width, COLORREF color, COLORREF fill, float rotAngle = 0);
-	void DrawSquareHatched(CDC* pDC, POINT a, int length, COLORREF color, COLORREF fill, float rotAngle = 0);
+	void DrawHatchedPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, int hatchStyle, COLORREF fill);
 	void DrawRegularPolygon(CDC* pDC, int cx, int cy, int r, int n, float rotAngle);
 	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF color);
 	void DrawQuadrilateral(CDC* pDC, POINT a, POINT b, POINT c, POINT d, COLORREF color, COLORREF fill = NULL);
