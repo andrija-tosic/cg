@@ -66,6 +66,12 @@
     <None Include="res\IND18015.rc2">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\..\cactus_part.emf">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\..\cactus_part_light.emf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\IND_18015Doc.ico">

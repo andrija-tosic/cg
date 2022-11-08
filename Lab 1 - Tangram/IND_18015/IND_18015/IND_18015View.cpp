@@ -26,8 +26,6 @@ constexpr int dim = 500;
 constexpr int squareCount = 20;
 constexpr int squareLength = dim / squareCount;
 
-
-
 // CIND18015View
 
 IMPLEMENT_DYNCREATE(CIND18015View, CView)
@@ -36,9 +34,7 @@ BEGIN_MESSAGE_MAP(CIND18015View, CView)
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CIND18015View::OnFilePrintPreview)
-	ON_WM_CONTEXTMENU()
-	ON_WM_RBUTTONUP()
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
@@ -46,7 +42,8 @@ END_MESSAGE_MAP()
 
 CIND18015View::CIND18015View() noexcept
 {
-	this->gridEnabled = false;
+	// TODO: add construction code here
+
 }
 
 CIND18015View::~CIND18015View()
@@ -92,12 +89,12 @@ void CIND18015View::OnDraw(CDC* pDC)
 	// plave linije u belom kvadratu
 
 	constexpr COLORREF BLUE = RGB(102, 153, 255);
-	constexpr POINT hatchedSquareA = { squareLength * 13, squareLength }; 
-	constexpr POINT hatchedSquareB = { squareLength * (squareCount - 1), squareLength }; 
+	constexpr POINT hatchedSquareA = { squareLength * 13, squareLength };
+	constexpr POINT hatchedSquareB = { squareLength * (squareCount - 1), squareLength };
 	constexpr POINT hatchedSquareC = { squareLength * (squareCount - 1), 7 * squareLength };
-	constexpr POINT hatchedSquareD = { squareLength * 13, 7 * squareLength }; 
+	constexpr POINT hatchedSquareD = { squareLength * 13, 7 * squareLength };
 
-	POINT hatchedSquareVertices[] = {hatchedSquareA , hatchedSquareB, hatchedSquareC, hatchedSquareD};
+	POINT hatchedSquareVertices[] = { hatchedSquareA , hatchedSquareB, hatchedSquareC, hatchedSquareD };
 
 	constexpr int hatchedSquareLength = squareLength * 6;
 
@@ -168,14 +165,6 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 // CIND18015View printing
 
-
-void CIND18015View::OnFilePrintPreview()
-{
-#ifndef SHARED_HANDLERS
-	AFXPrintPreview(this);
-#endif
-}
-
 BOOL CIND18015View::OnPreparePrinting(CPrintInfo* pInfo)
 {
 	// default preparation
@@ -190,19 +179,6 @@ void CIND18015View::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 void CIND18015View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 {
 	// TODO: add cleanup after printing
-}
-
-void CIND18015View::OnRButtonUp(UINT /* nFlags */, CPoint point)
-{
-	ClientToScreen(&point);
-	OnContextMenu(this, point);
-}
-
-void CIND18015View::OnContextMenu(CWnd* /* pWnd */, CPoint point)
-{
-#ifndef SHARED_HANDLERS
-	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
-#endif
 }
 
 
@@ -225,9 +201,6 @@ CIND18015Doc* CIND18015View::GetDocument() const // non-debug version is inline
 	return (CIND18015Doc*)m_pDocument;
 }
 #endif //_DEBUG
-
-
-// CIND18015View message handlers
 
 double CIND18015View::GetDistance(POINT a, POINT b)
 {
@@ -279,9 +252,9 @@ void CIND18015View::DrawPolygon(CDC* pDC, POINT points[], int numOfPoints, COLOR
 
 	CPen* prevPen = pDC->SelectObject(&newPen);
 	CBrush* prevBrush = pDC->SelectObject(&newBrush);
-	
+
 	pDC->Polygon(points, numOfPoints);
-	
+
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);
 
@@ -358,6 +331,7 @@ void CIND18015View::DrawQuadrilateral(CDC* pDC, POINT a, POINT b, POINT c, POINT
 	pDC->SelectObject(prevBrush);
 }
 
+// CIND18015View message handlers
 
 void CIND18015View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {

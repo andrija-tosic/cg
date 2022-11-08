@@ -14,20 +14,21 @@ protected: // create from serialization only
 // Attributes
 protected:
 	bool gridEnabled;
-
+	HENHMETAFILE cactusPartMF;
+	HENHMETAFILE cactusPartLightMF;
 public:
 	CIND18015Doc* GetDocument() const;
 
 // Operations
 public:
-	double GetDistance(POINT a, POINT b);
-	void DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, int n, COLORREF fillColor, COLORREF borderColor);
-	void DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, COLORREF fill = NULL);
-	void DrawPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, COLORREF fill);
-	void DrawHatchedPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, int hatchStyle, COLORREF fill);
-	void DrawRegularPolygon(CDC* pDC, int cx, int cy, int r, int n, float rotAngle);
+	void Translate(CDC* pDC, float dX, float dY, bool rightMultiply);
+	void Scale(CDC* pDC, float sX, float sY, bool rightMultiply);
+	void Rotate(CDC* pDC, float angle, bool rightMultiply);
+	void DrawFigure(CDC* pDC);
 	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF color);
-	void DrawQuadrilateral(CDC* pDC, POINT a, POINT b, POINT c, POINT d, COLORREF color, COLORREF fill = NULL);
+
+	void DrawVase(CDC* pDC, COLORREF color, COLORREF fill);
+	void DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF color, COLORREF fill);
 
 // Overrides
 public:

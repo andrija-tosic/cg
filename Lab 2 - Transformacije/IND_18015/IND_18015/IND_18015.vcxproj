@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
-    <ProjectGuid>{6944D77B-E2AF-4AA1-AF43-D4945044637E}</ProjectGuid>
+    <ProjectGuid>{36B4F94F-C7D3-4CA5-9B17-3C678E0724B7}</ProjectGuid>
     <Keyword>MFCProj</Keyword>
     <RootNamespace>IND18015</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
@@ -208,6 +208,8 @@
     <ResourceCompile Include="IND18015.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\cactus_part.emf" />
+    <None Include="..\..\..\..\cactus_part_light.emf" />
     <None Include="res\IND18015.rc2" />
   </ItemGroup>
   <ItemGroup>
