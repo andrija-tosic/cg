@@ -22,6 +22,7 @@ public:
 public:
 	double GetDistance(POINT a, POINT b);
 	void DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, int n, COLORREF fillColor, COLORREF borderColor);
+	void DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, int n, COLORREF fillColor, int hsStyle, COLORREF borderColor);
 	void DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, COLORREF fill = NULL);
 	void DrawPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, COLORREF fill);
 	void DrawHatchedPolygon(CDC* pDC, POINT points[], int numOfPoints, COLORREF color, int hatchStyle, COLORREF fill);

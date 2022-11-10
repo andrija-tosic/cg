@@ -42,8 +42,7 @@ END_MESSAGE_MAP()
 
 CIND18015View::CIND18015View() noexcept
 {
-	// TODO: add construction code here
-
+	this->gridEnabled = true;
 }
 
 CIND18015View::~CIND18015View()
@@ -75,85 +74,93 @@ void CIND18015View::OnDraw(CDC* pDC)
 	CBrush background(BGCOLOR);
 	pDC->FillRect(&rect, &background);
 
-	// roze trougao
-
-	constexpr COLORREF PINK = RGB(255, 153, 204);
-	constexpr COLORREF BORDER_GREEN = RGB(13, 255, 13);
-
-	POINT rozeTrougaoA = { squareLength, squareLength };
-	POINT rozeTrougaoB = { 13 * squareLength, squareLength };
-	POINT rozeTrougaoC = { squareLength, 13 * squareLength };
-
-	this->DrawTriangle(pDC, rozeTrougaoA, rozeTrougaoB, rozeTrougaoC, BORDER_GREEN, PINK);
-
-	// plave linije u belom kvadratu
-
-	constexpr COLORREF BLUE = RGB(102, 153, 255);
-	constexpr POINT hatchedSquareA = { squareLength * 13, squareLength };
-	constexpr POINT hatchedSquareB = { squareLength * (squareCount - 1), squareLength };
-	constexpr POINT hatchedSquareC = { squareLength * (squareCount - 1), 7 * squareLength };
-	constexpr POINT hatchedSquareD = { squareLength * 13, 7 * squareLength };
-
-	POINT hatchedSquareVertices[] = { hatchedSquareA , hatchedSquareB, hatchedSquareC, hatchedSquareD };
-
-	constexpr int hatchedSquareLength = squareLength * 6;
-
-	this->DrawHatchedPolygon(pDC, hatchedSquareVertices, 4, BORDER_GREEN, HS_HORIZONTAL, BLUE);
-
-	// mnogougao u roze trouglu
-
-	this->DrawInscribedPolygon(pDC, rozeTrougaoA, rozeTrougaoB, rozeTrougaoC, 8, PINK, BORDER_GREEN);
-
-	// crveni trougao
-
-	POINT crveniTrougaoA = { 7 * squareLength, 7 * squareLength };
-	POINT crveniTrougaoB = { (squareCount - 1) * squareLength, 7 * squareLength };
-	POINT crveniTrougaoC = { (squareCount - 1) * squareLength, (squareCount - 1) * squareLength };
-
-	this->DrawTriangle(pDC, crveniTrougaoA, crveniTrougaoB, crveniTrougaoC, BORDER_GREEN, RGB(255, 0, 0));
-	this->DrawInscribedPolygon(pDC, crveniTrougaoA, crveniTrougaoB, crveniTrougaoC, 5, RGB(255, 0, 0), BORDER_GREEN);
-
-	// zuti trougao
-
-	POINT zutiTrougaoA = { 13 * squareLength, 13 * squareLength };
-	POINT zutiTrougaoB = { (squareCount - 1) * squareLength, (squareCount - 1) * squareLength };
-	POINT zutiTrougaoC = { 13 * squareLength, (squareCount - 1) * squareLength };
-
-	this->DrawTriangle(pDC, zutiTrougaoA, zutiTrougaoB, zutiTrougaoC, BORDER_GREEN, RGB(255, 255, 0));
-	this->DrawInscribedPolygon(pDC, zutiTrougaoA, zutiTrougaoB, zutiTrougaoC, 6, RGB(255, 255, 0), BORDER_GREEN);
-
-	// zeleni trougao
-
-	constexpr COLORREF TRIANGLE_GREEN = RGB(50, 205, 50);
-
-	POINT zeleniTrougaoA = { squareLength, 13 * squareLength };
-	POINT zeleniTrougaoB = { 7 * squareLength, 13 * squareLength };
-	POINT zeleniTrougaoC = { squareLength, (squareCount - 1) * squareLength };
-
-	this->DrawTriangle(pDC, zeleniTrougaoA, zeleniTrougaoB, zeleniTrougaoC, BORDER_GREEN, TRIANGLE_GREEN);
-	this->DrawInscribedPolygon(pDC, zeleniTrougaoA, zeleniTrougaoB, zeleniTrougaoC, 4, TRIANGLE_GREEN, BORDER_GREEN);
-
 	// narandzasti trougao
 
-	constexpr COLORREF TRIANGLE_ORANGE = RGB(255, 153, 51);
+	POINT trianglePoints[] = { 
+		{squareLength, squareLength}, 
+		{ squareLength, 13 * squareLength},
+		{13*squareLength, 13*squareLength }
+	};
 
-	POINT narandzastiTrougaoA = { squareLength, (squareCount - 1) * squareLength };
-	POINT narandzastiTrougaoB = { 7 * squareLength, 13 * squareLength };
-	POINT narandzastiTrougaoC = { 13 * squareLength , (squareCount - 1) * squareLength };
+	constexpr COLORREF BLUE = RGB(0, 0, 255);
+	constexpr COLORREF ORANGE = RGB(255, 153, 51);
 
-	this->DrawTriangle(pDC, narandzastiTrougaoA, narandzastiTrougaoB, narandzastiTrougaoC, BORDER_GREEN, TRIANGLE_ORANGE);
-	this->DrawInscribedPolygon(pDC, narandzastiTrougaoA, narandzastiTrougaoB, narandzastiTrougaoC, 7, TRIANGLE_ORANGE, BORDER_GREEN);
+	this->DrawPolygon(pDC, trianglePoints, 3, BLUE, ORANGE);
+	this->DrawInscribedPolygon(pDC, trianglePoints[0], trianglePoints[1], trianglePoints[2], 4, ORANGE, BLUE);
+	
+	// zeleni T
 
-	// ljubicasti romb
+	constexpr COLORREF GREEN = RGB(50, 205, 50);
+
+	POINT greenTPoints[] = {
+		{squareLength, squareLength},
+		{13 * squareLength, squareLength},
+		{13 * squareLength, 13 * squareLength }
+	};
+
+	this->DrawPolygon(pDC, greenTPoints, 3, BLUE, GREEN);
+	this->DrawInscribedPolygon(pDC, greenTPoints[0], greenTPoints[1], greenTPoints[2], 5, GREEN, BLUE);
+
+	// kvadrat
 
 	constexpr COLORREF PURPLE = RGB(153, 0, 204);
 
-	POINT qA = { squareLength * 7, squareLength * 7 };
-	POINT qB = { squareLength * 7, squareLength * 13 };
-	POINT qC = { squareLength * 13, squareLength * (squareCount - 1) };
-	POINT qD = { squareLength * 13, squareLength * 13 };
+	POINT squarePoints[] = {
+		{13 * squareLength, squareLength},
+		{squareLength * (squareCount - 1), squareLength },
+		{squareLength * (squareCount - 1), 7 * squareLength},
+		{13* squareLength, 7*squareLength}
+	};
 
-	this->DrawQuadrilateral(pDC, qA, qB, qC, qD, BORDER_GREEN, PURPLE);
+	this->DrawPolygon(pDC, squarePoints, 4, BLUE, PURPLE);
+
+	// hatched trougao
+
+	constexpr COLORREF LIGHT_BLUE = RGB(115, 161, 255);
+
+	POINT hatchedTPoints[] = {
+		{squareLength, 13 * squareLength },
+		{squareLength, squareLength * (squareCount - 1)},
+		{squareLength * 7, squareLength * (squareCount - 7)}
+	};
+
+	this->DrawHatchedPolygon(pDC, hatchedTPoints, 3, BLUE, HS_VERTICAL, BLUE);
+	this->DrawInscribedPolygon(pDC, hatchedTPoints[0], hatchedTPoints[1], hatchedTPoints[2], 7, RGB(255, 255, 255), HS_VERTICAL, BLUE);
+
+	// roze romb
+
+	constexpr COLORREF PINK = RGB(255, 153, 204);
+
+	POINT rombPoints[] = {
+		{ 7 * squareLength, 13 * squareLength },
+		{13 * squareLength, 13 * squareLength},
+		{squareLength * 7, squareLength * (squareCount - 1)},
+		{squareLength, squareLength * (squareCount - 1)}
+	};
+
+	this->DrawPolygon(pDC, rombPoints, 4, BLUE, PINK);
+
+	// zuti trougao
+
+	POINT yellowTPoints[] = {
+		{13 * squareLength, 13 * squareLength},
+		{7 * squareLength, squareLength * (squareCount - 1)},
+		{squareLength * (squareCount - 1),squareLength * (squareCount - 1)}
+	};
+
+	this->DrawPolygon(pDC, yellowTPoints, 3, BLUE, RGB(255, 255, 0));
+	this->DrawInscribedPolygon(pDC, yellowTPoints[0], yellowTPoints[1], yellowTPoints[2], 6, RGB(255, 255, 0), BLUE);
+
+	// crveni trougao
+
+	POINT redTPoints[] = {
+		{13 * squareLength, 13 * squareLength},
+		{squareLength * (squareCount - 1), 13 * squareLength},
+		{squareLength * (squareCount - 1),squareLength * (squareCount - 1)}
+	};
+
+	this->DrawPolygon(pDC, redTPoints, 3, BLUE, RGB(255, 0, 0));
+	this->DrawInscribedPolygon(pDC, redTPoints[0], redTPoints[1], redTPoints[2], 8, RGB(255, 0, 0), BLUE);
 
 	constexpr int GRID_GREY = RGB(238, 238, 238);
 
@@ -230,6 +237,30 @@ void CIND18015View::DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, in
 	pDC->SelectObject(prevBrush);
 }
 
+void CIND18015View::DrawInscribedPolygon(CDC* pDC, POINT a, POINT b, POINT c, int n, COLORREF fillColor, int hsStyle, COLORREF borderColor) {
+	double cLen = GetDistance(a, b);
+	double aLen = GetDistance(c, b);
+	double bLen = GetDistance(c, a);
+	double sum = cLen + bLen + aLen;
+	double s = sum / 2;
+	double r = sqrt(s * (s - aLen) * (s - bLen) * (s - cLen)) / s;
+
+	double cx = (cLen * c.x + bLen * b.x + aLen * a.x) / sum + 0.5;
+	double cy = (cLen * c.y + bLen * b.y + aLen * a.y) / sum + 0.5;
+
+	CPen pen(PS_SOLID | PS_GEOMETRIC, 3, borderColor);
+	CBrush brush(hsStyle, borderColor);
+
+	CPen* prevPen = pDC->SelectObject(&pen);
+	CBrush* prevBrush = pDC->SelectObject(&brush);
+
+	DrawRegularPolygon(pDC, cx, cy, r / 2, n, 0);
+
+	pDC->SelectObject(prevPen);
+	pDC->SelectObject(prevBrush);
+}
+
+
 void CIND18015View::DrawTriangle(CDC* pDC, POINT a, POINT b, POINT c, COLORREF color, COLORREF fill)
 {
 	CPen newPen(PS_SOLID | PS_GEOMETRIC, 5, color);
@@ -277,7 +308,7 @@ void CIND18015View::DrawRegularPolygon(CDC* pDC, int cx, int cy, int r, int n, f
 {
 	double rotAngleRad = RAD(rotAngle);
 	double interceptAngleChange = 2 * M_PI / n;
-
+	
 	POINT* vertices = new POINT[n];
 
 	for (auto i = 0; i < n; i++) {

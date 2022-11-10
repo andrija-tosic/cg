@@ -11,26 +11,29 @@ protected: // create from serialization only
 	CIND18015View() noexcept;
 	DECLARE_DYNCREATE(CIND18015View)
 
-// Attributes
+		// Attributes
 protected:
 	bool gridEnabled;
+	int smallCactusRotAngle = 0;
+	int wholeCactusRotAngle = 0;
 	HENHMETAFILE cactusPartMF;
 	HENHMETAFILE cactusPartLightMF;
 public:
 	CIND18015Doc* GetDocument() const;
 
-// Operations
+	// Operations
 public:
 	void Translate(CDC* pDC, float dX, float dY, bool rightMultiply);
 	void Scale(CDC* pDC, float sX, float sY, bool rightMultiply);
 	void Rotate(CDC* pDC, float angle, bool rightMultiply);
 	void DrawFigure(CDC* pDC);
-	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF color);
+	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF borderColor);
 
+	void DrawCactus(CDC* pDC, POINT topLeft, SIZE cactusSize, HENHMETAFILE mf);
 	void DrawVase(CDC* pDC, COLORREF color, COLORREF fill);
-	void DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF color, COLORREF fill);
+	void DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF borderColor, COLORREF fill);
 
-// Overrides
+	// Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -39,7 +42,7 @@ protected:
 	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
 	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
 
-// Implementation
+	// Implementation
 public:
 	virtual ~CIND18015View();
 #ifdef _DEBUG
@@ -49,7 +52,7 @@ public:
 
 protected:
 
-// Generated message map functions
+	// Generated message map functions
 protected:
 	DECLARE_MESSAGE_MAP()
 public:
@@ -58,6 +61,8 @@ public:
 
 #ifndef _DEBUG  // debug version in IND_18015View.cpp
 inline CIND18015Doc* CIND18015View::GetDocument() const
-   { return reinterpret_cast<CIND18015Doc*>(m_pDocument); }
+{
+	return reinterpret_cast<CIND18015Doc*>(m_pDocument);
+}
 #endif
 
