@@ -29,7 +29,7 @@ public:
 	void DrawFigure(CDC* pDC);
 	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF borderColor);
 
-	void DrawCactus(CDC* pDC, POINT topLeft, SIZE cactusSize, HENHMETAFILE mf);
+	void DrawCactus(CDC* pDC, HENHMETAFILE mf);
 	void DrawVase(CDC* pDC, COLORREF color, COLORREF fill);
 	void DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF borderColor, COLORREF fill);
 

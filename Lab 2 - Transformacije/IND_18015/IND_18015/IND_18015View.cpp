@@ -159,7 +159,7 @@ void CIND18015View::Scale(CDC* pDC, float sX, float sY, bool rightMultiply)
 
 void CIND18015View::Rotate(CDC* pDC, float angle, bool rightMultiply)
 {
-	XFORM t{
+	XFORM t = {
 		cos(RAD(angle)), -sin(RAD(angle)),
 		sin(RAD(angle)), cos(RAD(angle))
 	};
@@ -167,12 +167,14 @@ void CIND18015View::Rotate(CDC* pDC, float angle, bool rightMultiply)
 	pDC->ModifyWorldTransform(&t, rightMultiply ? MWT_RIGHTMULTIPLY : MWT_LEFTMULTIPLY);
 }
 
-void CIND18015View::DrawCactus(CDC* pDC, POINT topLeft, SIZE cactusSize, HENHMETAFILE mf) {
-	PlayEnhMetaFile(pDC->GetSafeHdc(), mf, CRect(topLeft, cactusSize));
+void CIND18015View::DrawCactus(CDC* pDC, HENHMETAFILE mf) {
+	constexpr POINT point = { 0,0 };
+	constexpr SIZE size = { squareLength, squareLength };
+	PlayEnhMetaFile(pDC->GetSafeHdc(), mf, CRect(point, size));
 }
 
 void ResetWorldTransform(CDC* pDC) {
-	XFORM default = {
+	constexpr XFORM default = {
 		1, 0, 0,
 		1, 0, 0,
 	};
@@ -196,118 +198,153 @@ void CIND18015View::DrawFigure(CDC* pDC)
 {
 	int oldGraphicsMode = SetGraphicsMode(pDC->GetSafeHdc(), GM_ADVANCED);
 
-	POINT bottomCircleInVase = { squareLength * 10, squareLength * (squareCount - 3) };
-	POINT circleAbove = { squareLength * 10, squareLength * (squareCount - 6) };
-	POINT firstCircleOnRight = { squareLength * 12.125, squareLength * 12 };
-	POINT secondCircleOnRight = { squareLength * 15, squareLength * 12 };
-	POINT bottomCircleOnLeft = { squareLength * 7.875, squareLength * 12 };
-	POINT topCircleOnLeft = { squareLength * 7.875, squareLength * 9 };
+	constexpr POINT bottomCircleInVase = { squareLength * 10, squareLength * (squareCount - 3) };
+	constexpr POINT circleAbove = { 0, -squareLength * 3 };
+	constexpr POINT firstCircleOnRight = { squareLength * 2.125, -squareLength * 5 };
+	constexpr POINT secondCircleOnRight = { squareLength * 5, -squareLength * 5 };
+	constexpr POINT bottomCircleOnLeft = { -2 * squareLength, -5 * squareLength };
+	constexpr POINT topCircleOnLeft = { -2 * squareLength, -8 * squareLength };
 
 	XFORM xFormOld;
 
 	SetViewportOrgEx(pDC->GetSafeHdc(), bottomCircleInVase.x, bottomCircleInVase.y, NULL);
-	this->Rotate(pDC, wholeCactusRotAngle, true);
 	GetWorldTransform(pDC->GetSafeHdc(), &xFormOld);
 
 	constexpr COLORREF CIRCLE_GREEN = RGB(0, 204, 0);
 
+	constexpr double thinCactusWidthFactor = 1;
+	constexpr double thinCactusHeightFactor = 4;
+
+	constexpr double mediumCactusWidthFactor = 2;
+	constexpr double mediumCactusHeightFactor = 3;
+
+	constexpr double fatCactusWidthFactor = 2.5;
+	constexpr double fatCactusHeightFactor = 3;
+
+
 	// bottom svetli kaktus
 
-	POINT topLeft = { 8.75 * squareLength, squareLength * (squareCount - 6) };
-	SIZE cactusSize = { 2.5 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartLightMF);
+	this->Scale(pDC, fatCactusWidthFactor, fatCactusHeightFactor, true);
+	this->Translate(pDC, -fatCactusWidthFactor / 2.0 * squareLength, -fatCactusHeightFactor * squareLength, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartLightMF);
+	ResetWorldTransform(pDC);
 
 	// kaktus iznad bottom svetlog
 
-	topLeft = { (long)(9.5 * squareLength), squareLength * (squareCount - 9) };
-	cactusSize = { squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
+	this->Scale(pDC, thinCactusWidthFactor, thinCactusHeightFactor, true);
+	this->Translate(pDC, -thinCactusWidthFactor / 2.0 * squareLength, circleAbove.y - thinCactusHeightFactor * squareLength, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
 
-	SetViewportOrgEx(pDC->GetSafeHdc(), squareLength * 10, squareLength * (squareCount - 6), NULL);
+	// oba kaktusa rotirana za 45
+
+	this->Translate(pDC, -squareLength / 2.0, 0, true);
+	this->Scale(pDC, thinCactusWidthFactor, thinCactusHeightFactor, true);
 	this->Rotate(pDC, 45, true);
-	topLeft = { -squareLength / 2, 0 };
-	cactusSize = { squareLength, -3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
-	UndoWorldTransform(pDC, xFormOld);
+	this->Translate(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
 
+	this->Translate(pDC, -squareLength / 2.0, 0, true);
+	this->Scale(pDC, thinCactusWidthFactor, thinCactusHeightFactor, true);
 	this->Rotate(pDC, -45, true);
-	topLeft = { -squareLength / 2, 0 };
-	cactusSize = { squareLength, -3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
-	UndoWorldTransform(pDC, xFormOld);
+	this->Translate(pDC, firstCircleOnRight.x, firstCircleOnRight.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
 
-	SetViewportOrgEx(pDC->GetSafeHdc(), firstCircleOnRight.x, firstCircleOnRight.y, NULL);
-	this->Rotate(pDC, -90, true);
+	// prvi kaktus desno
 
-	topLeft = { -squareLength, -3*squareLength };
-	cactusSize = { 2 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
-	UndoWorldTransform(pDC, xFormOld);
-
-	// poslednja 2 kaktusa desno
-
-	SetViewportOrgEx(pDC->GetSafeHdc(), secondCircleOnRight.x, secondCircleOnRight.y, NULL);
-	this->Rotate(pDC, -45, true);
-
-	topLeft = { -squareLength, -3*squareLength};
-	cactusSize = { 2 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
-	UndoWorldTransform(pDC, xFormOld);
-
-	this->Rotate(pDC, -45 - 90, true);
-
-	topLeft = { -squareLength, -3 * squareLength };
-	cactusSize = { 2 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
-	UndoWorldTransform(pDC, xFormOld);
-
-	// rotating cactus
-
-	SetViewportOrgEx(pDC->GetSafeHdc(), firstCircleOnRight.x, firstCircleOnRight.y, NULL);
-	this->Rotate(pDC, this->smallCactusRotAngle, true);
-
-	topLeft = { -squareLength, -3 * squareLength };
-	cactusSize = { 2 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartLightMF);
-	UndoWorldTransform(pDC, xFormOld);
-	ResetViewportOrg(pDC);
-
-	// krajnji levi kaktus
-
-	SetViewportOrgEx(pDC->GetSafeHdc(), bottomCircleOnLeft.x, bottomCircleOnLeft.y, NULL);
+	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
+	this->Translate(pDC, -mediumCactusWidthFactor / 2.0 * squareLength, 0, true);
 	this->Rotate(pDC, 90, true);
+	this->Translate(pDC, firstCircleOnRight.x, firstCircleOnRight.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
 
-	topLeft = { -squareLength, -3*squareLength };
-	cactusSize = { 2 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
-	UndoWorldTransform(pDC, xFormOld);
-	ResetViewportOrg(pDC);
+	// rotirajuci kaktus
 
-	// kaktus iznad
+	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
+	this->Translate(pDC, -mediumCactusWidthFactor / 2.0 * squareLength, -mediumCactusHeightFactor * squareLength, true);
+	this->Rotate(pDC, smallCactusRotAngle, true);
+	this->Translate(pDC, firstCircleOnRight.x, firstCircleOnRight.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartLightMF);
+	ResetWorldTransform(pDC);
 
-	topLeft = { bottomCircleOnLeft.x -squareLength, bottomCircleOnLeft.y -3 * squareLength };
-	cactusSize = { 2 * squareLength, 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
+	// krajnja desna 2 kaktusa
+	
+	// 1.
+	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
+	this->Translate(pDC, -mediumCactusWidthFactor/2.0 * squareLength, 0, true);
+	this->Rotate(pDC, 45, true);
+	this->Translate(pDC, secondCircleOnRight.x, secondCircleOnRight.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
 
-	// gornji kaktus levo
 
-	topLeft = { (long)(topCircleOnLeft.x - 1.175*squareLength), topCircleOnLeft.y - 3 * squareLength};
-	cactusSize = { (long)(2.375 * squareLength), 3 * squareLength };
-	this->DrawCactus(pDC, topLeft, cactusSize, this->cactusPartMF);
+	// 2.
 
+	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
+	this->Translate(pDC, -mediumCactusWidthFactor / 2.0 * squareLength, 0, true);
+	this->Rotate(pDC, 45 + 90, true);
+	this->Translate(pDC, secondCircleOnRight.x, secondCircleOnRight.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
 
-	// kruzici
+	// levi kaktus
+
+	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
+	this->Translate(pDC, -mediumCactusWidthFactor / 2.0 * squareLength, 0, true);
+	this->Rotate(pDC, -90, true);
+	this->Translate(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
+
+	// kaktus iznad levog
+
+	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
+	this->Translate(pDC, -mediumCactusWidthFactor / 2.0 * squareLength, 0, true);
+	this->Translate(pDC, topCircleOnLeft.x, topCircleOnLeft.y, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
+
+	// kaktus gore levo
+
+	this->Scale(pDC, fatCactusWidthFactor, fatCactusHeightFactor, true);
+	this->Translate(pDC, -fatCactusWidthFactor / 2.0 * squareLength, 0, true);
+	this->Translate(pDC, topCircleOnLeft.x, topCircleOnLeft.y - fatCactusHeightFactor * squareLength, true);
+	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCactus(pDC, this->cactusPartMF);
+	ResetWorldTransform(pDC);
+
+	// staticni kruzic
+
+	this->DrawCircle(pDC, 0, 0, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+
+	// kruzici koji se rotiraju sa celom slikom
+
+	this->Rotate(pDC, wholeCactusRotAngle, true);
 
 	this->DrawCircle(pDC, circleAbove.x, circleAbove.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-	
+
 	this->DrawCircle(pDC, firstCircleOnRight.x, firstCircleOnRight.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 	this->DrawCircle(pDC, secondCircleOnRight.x, secondCircleOnRight.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
 	this->DrawCircle(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 	this->DrawCircle(pDC, topCircleOnLeft.x, topCircleOnLeft.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-	
+
 	ResetWorldTransform(pDC);
-	this->DrawCircle(pDC, bottomCircleInVase.x, bottomCircleInVase.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	ResetViewportOrg(pDC);
+
 	// vaza
 
 	constexpr COLORREF VASE_GOLD = RGB(222, 148, 0);
