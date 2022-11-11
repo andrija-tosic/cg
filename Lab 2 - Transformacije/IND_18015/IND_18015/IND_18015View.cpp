@@ -173,7 +173,7 @@ void CIND18015View::DrawCactus(CDC* pDC, HENHMETAFILE mf) {
 	PlayEnhMetaFile(pDC->GetSafeHdc(), mf, CRect(point, size));
 }
 
-void ResetWorldTransform(CDC* pDC) {
+void CIND18015View::ResetWorldTransform(CDC* pDC) {
 	constexpr XFORM default = {
 		1, 0, 0,
 		1, 0, 0,
@@ -182,15 +182,15 @@ void ResetWorldTransform(CDC* pDC) {
 	SetWorldTransform(pDC->GetSafeHdc(), &default);
 }
 
-void UndoWorldTransform(CDC* pDC, XFORM& xForm) {
+void CIND18015View::UndoWorldTransform(CDC* pDC, XFORM& xForm) {
 	SetWorldTransform(pDC->GetSafeHdc(), &xForm);
 }
 
-void ResetViewportOrg(CDC* pDC) {
+void CIND18015View::ResetViewportOrg(CDC* pDC) {
 	SetViewportOrgEx(pDC->GetSafeHdc(), 0, 0, NULL);
 }
 
-void UndoViewportOrg(CDC* pDC, POINT org) {
+void CIND18015View::UndoViewportOrg(CDC* pDC, POINT org) {
 	SetViewportOrgEx(pDC->GetSafeHdc(), org.x, org.y, NULL);
 }
 
@@ -228,7 +228,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, -fatCactusWidthFactor / 2.0 * squareLength, -fatCactusHeightFactor * squareLength, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartLightMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// kaktus iznad bottom svetlog
 
@@ -236,7 +236,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, -thinCactusWidthFactor / 2.0 * squareLength, circleAbove.y - thinCactusHeightFactor * squareLength, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// oba kaktusa rotirana za 45
 
@@ -246,7 +246,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	this->Translate(pDC, -squareLength / 2.0, 0, true);
 	this->Scale(pDC, thinCactusWidthFactor, thinCactusHeightFactor, true);
@@ -254,7 +254,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, firstCircleOnRight.x, firstCircleOnRight.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// prvi kaktus desno
 
@@ -264,7 +264,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, firstCircleOnRight.x, firstCircleOnRight.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// rotirajuci kaktus
 
@@ -274,7 +274,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, firstCircleOnRight.x, firstCircleOnRight.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartLightMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// krajnja desna 2 kaktusa
 	
@@ -285,7 +285,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, secondCircleOnRight.x, secondCircleOnRight.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 
 	// 2.
@@ -296,7 +296,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, secondCircleOnRight.x, secondCircleOnRight.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// levi kaktus
 
@@ -306,7 +306,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// kaktus iznad levog
 
@@ -315,7 +315,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, topCircleOnLeft.x, topCircleOnLeft.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// kaktus gore levo
 
@@ -324,7 +324,7 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->Translate(pDC, topCircleOnLeft.x, topCircleOnLeft.y - fatCactusHeightFactor * squareLength, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
 	this->DrawCactus(pDC, this->cactusPartMF);
-	ResetWorldTransform(pDC);
+	this->ResetWorldTransform(pDC);
 
 	// staticni kruzic
 
@@ -342,8 +342,8 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->DrawCircle(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 	this->DrawCircle(pDC, topCircleOnLeft.x, topCircleOnLeft.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
-	ResetWorldTransform(pDC);
-	ResetViewportOrg(pDC);
+	this->ResetWorldTransform(pDC);
+	this->ResetViewportOrg(pDC);
 
 	// vaza
 

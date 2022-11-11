@@ -26,12 +26,19 @@ public:
 	void Translate(CDC* pDC, float dX, float dY, bool rightMultiply);
 	void Scale(CDC* pDC, float sX, float sY, bool rightMultiply);
 	void Rotate(CDC* pDC, float angle, bool rightMultiply);
+	
 	void DrawFigure(CDC* pDC);
 	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF borderColor);
 
 	void DrawCactus(CDC* pDC, HENHMETAFILE mf);
 	void DrawVase(CDC* pDC, COLORREF color, COLORREF fill);
 	void DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF borderColor, COLORREF fill);
+
+	void ResetWorldTransform(CDC* pDC);
+	void UndoWorldTransform(CDC* pDC, XFORM& xForm);
+	
+	void ResetViewportOrg(CDC* pDC);
+	void UndoViewportOrg(CDC* pDC, POINT org);
 
 	// Overrides
 public:
