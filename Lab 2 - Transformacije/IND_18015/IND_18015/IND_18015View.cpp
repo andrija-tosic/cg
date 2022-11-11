@@ -89,6 +89,14 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	this->DrawFigure(pDC);
 
+	POINT textLocation = { squareLength * (squareCount - 1), squareLength };
+
+	LOGFONTW logFont{};
+	logFont.lfEscapement = -900;
+	logFont.lfHeight = 40;
+
+	this->DrawTextString(pDC, textLocation.x, textLocation.y, CString("18015 Andrija Tosic"), logFont, RGB(0, 0, 0), RGB(255, 255, 0));
+
 	constexpr int GRID_GREY = RGB(238, 238, 238);
 
 	if (this->gridEnabled) {
@@ -277,10 +285,10 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	this->ResetWorldTransform(pDC);
 
 	// krajnja desna 2 kaktusa
-	
+
 	// 1.
 	this->Scale(pDC, mediumCactusWidthFactor, mediumCactusHeightFactor, true);
-	this->Translate(pDC, -mediumCactusWidthFactor/2.0 * squareLength, 0, true);
+	this->Translate(pDC, -mediumCactusWidthFactor / 2.0 * squareLength, 0, true);
 	this->Rotate(pDC, 45, true);
 	this->Translate(pDC, secondCircleOnRight.x, secondCircleOnRight.y, true);
 	this->Rotate(pDC, wholeCactusRotAngle, true);
@@ -418,6 +426,30 @@ void CIND18015View::DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF color, 
 	pDC->SelectObject(prevPen);
 }
 
+void CIND18015View::DrawTextString(CDC* pDC, int x, int y, const CString& text, LOGFONTW logFont, COLORREF color, COLORREF strokeColor)
+{
+	CFont font;
+	font.CreateFontIndirectW(&logFont);
+
+	CFont* pOldFont = pDC->SelectObject(&font);
+
+	COLORREF oldColor = pDC->SetTextColor(color);
+	int nOldMode = pDC->SetBkMode(TRANSPARENT);
+
+	CPen pen(PS_SOLID | PS_GEOMETRIC, 1, RGB(0, 0, 0));
+	CPen* oldPen = pDC->SelectObject(&pen);
+
+	pDC->TextOutW(x, y + 3, CString("18015 Andrija Tosic"));
+	pDC->SetTextColor(strokeColor);
+	pDC->TextOutW(x, y, text);
+
+	pDC->SelectObject(pOldFont);
+	pDC->SelectObject(oldPen);
+	pDC->SetTextColor(oldColor);
+	pDC->SetBkMode(nOldMode);
+
+	font.DeleteObject();
+}
 
 
 // CIND18015View message handlers
