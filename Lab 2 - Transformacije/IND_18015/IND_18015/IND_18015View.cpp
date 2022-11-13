@@ -229,55 +229,61 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	constexpr long thinCactusWidthFactor = 1;
 	constexpr long thinCactusHeightFactor = 4;
 
+	constexpr SIZE thinCactusScale = { thinCactusWidthFactor, thinCactusHeightFactor };
+	
 	constexpr long mediumCactusWidthFactor = 2;
 	constexpr long mediumCactusHeightFactor = 3;
 
+	constexpr SIZE mediumCactusScale = { mediumCactusWidthFactor, mediumCactusHeightFactor };
+	
 	constexpr double fatCactusWidthFactor = 2.5;
 	constexpr long fatCactusHeightFactor = 3;
 
+	constexpr SIZE fatCactusScale = { fatCactusWidthFactor, fatCactusHeightFactor };
+
 	// bottom svetli kaktus
 
-	this->DrawCactus(pDC, { (long)fatCactusWidthFactor, fatCactusHeightFactor }, { 0, 0 }, 0, this->cactusPartLightMF);
+	this->DrawCactus(pDC, fatCactusScale, { 0, 0 }, 0, this->cactusPartLightMF);
 
 	// kaktus iznad bottom svetlog
 
-	this->DrawCactus(pDC, { thinCactusWidthFactor, thinCactusHeightFactor }, { 0, circleAbove.y }, 0, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, { 0, circleAbove.y }, 0, this->cactusPartMF);
 
 	// oba kaktusa rotirana za 45
 
-	this->DrawCactus(pDC, { thinCactusWidthFactor, thinCactusHeightFactor }, { circleAbove.x, circleAbove.y + squareLength / 2 }, 45, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 2 }, 45, this->cactusPartMF);
 
-	this->DrawCactus(pDC, { thinCactusWidthFactor, thinCactusHeightFactor }, { circleAbove.x, circleAbove.y + squareLength / 2 }, -45, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 2 }, -45, this->cactusPartMF);
 
 	// prvi kaktus desno
 
-	this->DrawCactus(pDC, { mediumCactusWidthFactor, mediumCactusHeightFactor }, { firstCircleOnRight.x, firstCircleOnRight.y }, -90, this->cactusPartMF);
+	this->DrawCactus(pDC, mediumCactusScale, firstCircleOnRight, -90, this->cactusPartMF);
 
 	// rotirajuci kaktus
 
-	this->DrawCactus(pDC, { mediumCactusWidthFactor, mediumCactusHeightFactor }, { firstCircleOnRight.x, firstCircleOnRight.y }, smallCactusRotAngle, this->cactusPartLightMF);
+	this->DrawCactus(pDC, mediumCactusScale, firstCircleOnRight, smallCactusRotAngle, this->cactusPartLightMF);
 
 	// krajnja desna 2 kaktusa
 
 	// 1.
 
-	this->DrawCactus(pDC, { mediumCactusWidthFactor, mediumCactusHeightFactor }, { secondCircleOnRight.x, secondCircleOnRight.y }, -45, this->cactusPartMF);
+	this->DrawCactus(pDC, mediumCactusScale, secondCircleOnRight, -45, this->cactusPartMF);
 
 	// 2.
 
-	this->DrawCactus(pDC, { mediumCactusWidthFactor, mediumCactusHeightFactor }, { secondCircleOnRight.x, secondCircleOnRight.y }, -45 - 90, this->cactusPartMF);
+	this->DrawCactus(pDC, mediumCactusScale, secondCircleOnRight, -45 - 90, this->cactusPartMF);
 
 	// levi kaktus
 
-	this->DrawCactus(pDC, { mediumCactusWidthFactor, mediumCactusHeightFactor }, { bottomCircleOnLeft.x, bottomCircleOnLeft.y }, 90, this->cactusPartMF);
+	this->DrawCactus(pDC, mediumCactusScale, bottomCircleOnLeft, 90, this->cactusPartMF);
 
 	// kaktus iznad levog
 
-	this->DrawCactus(pDC, { mediumCactusWidthFactor, mediumCactusHeightFactor }, { bottomCircleOnLeft.x, bottomCircleOnLeft.y }, 0, this->cactusPartMF);
+	this->DrawCactus(pDC, mediumCactusScale, bottomCircleOnLeft, 0, this->cactusPartMF);
 
 	// kaktus gore levo
 
-	this->DrawCactus(pDC, { (long)fatCactusWidthFactor, fatCactusHeightFactor }, { topCircleOnLeft.x, topCircleOnLeft.y }, 0, this->cactusPartMF);
+	this->DrawCactus(pDC, fatCactusScale, topCircleOnLeft, 0, this->cactusPartMF);
 
 	// staticni kruzic
 
