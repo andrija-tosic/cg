@@ -28,9 +28,9 @@ public:
 	void Rotate(CDC* pDC, float angle, bool rightMultiply);
 
 	void DrawFigure(CDC* pDC);
-	void DrawGrid(CDC* pDC, POINT start, int size, int base, COLORREF borderColor);
+	void DrawGrid(CDC* pDC, POINT start, COLORREF borderColor);
 
-	void DrawCactus(CDC* pDC, HENHMETAFILE mf);
+	void DrawCactus(CDC* pDC, SIZE scale, POINT translate, int selfRotationAngle, HENHMETAFILE mf);
 	void DrawVase(CDC* pDC, COLORREF color, COLORREF fill);
 	void DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF borderColor, COLORREF fill);
 	void DrawTextString(CDC* pDC, int x, int y, const CString& text, LOGFONTW logFont, COLORREF color, COLORREF strokeColor);
