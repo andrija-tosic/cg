@@ -37,7 +37,6 @@ BEGIN_MESSAGE_MAP(CIND18015View, CView)
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
-	//	ON_WM_KEYUP()
 	ON_WM_KEYDOWN()
 END_MESSAGE_MAP()
 
@@ -79,6 +78,10 @@ void CIND18015View::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;
 
+	int oldGraphicsMode = SetGraphicsMode(pDC->GetSafeHdc(), GM_ADVANCED);
+
+	this->RotateAroundPoint(pDC, { dim / 2, dim / 2 }, 90);
+
 	// pozadina
 
 	constexpr COLORREF BGCOLOR = RGB(135, 206, 235);
@@ -89,11 +92,18 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	this->DrawFigure(pDC);
 
+	// vaza
+
+	constexpr COLORREF VASE_GOLD = RGB(222, 148, 0);
+
+	this->DrawVase(pDC, RGB(0, 0, 0), VASE_GOLD);
+
 	POINT textLocation = { squareLength * (squareCount - 1), squareLength };
 
 	LOGFONTW logFont{};
 	logFont.lfEscapement = -900;
 	logFont.lfHeight = 40;
+	logFont.lfOrientation = -900;
 
 	this->DrawTextString(pDC, textLocation.x, textLocation.y, CString("18015 Andrija Tosic"), logFont, RGB(0, 0, 0), RGB(255, 255, 0));
 
@@ -102,6 +112,7 @@ void CIND18015View::OnDraw(CDC* pDC)
 	if (this->gridEnabled) {
 		this->DrawGrid(pDC, { 0,0 }, GRID_GREY);
 	}
+	SetGraphicsMode(pDC->GetSafeHdc(), oldGraphicsMode);
 }
 
 
@@ -144,7 +155,7 @@ CIND18015Doc* CIND18015View::GetDocument() const // non-debug version is inline
 }
 #endif //_DEBUG
 
-void CIND18015View::Translate(CDC* pDC, float dX, float dY, bool rightMultiply)
+void CIND18015View::Translate(CDC* pDC, float dX, float dY, bool rightMultiply = false)
 {
 	XFORM t = {
 		1, 0,
@@ -155,7 +166,7 @@ void CIND18015View::Translate(CDC* pDC, float dX, float dY, bool rightMultiply)
 
 }
 
-void CIND18015View::Scale(CDC* pDC, float sX, float sY, bool rightMultiply)
+void CIND18015View::Scale(CDC* pDC, float sX, float sY, bool rightMultiply = false)
 {
 	XFORM t = {
 		sX, 0,
@@ -165,7 +176,7 @@ void CIND18015View::Scale(CDC* pDC, float sX, float sY, bool rightMultiply)
 	pDC->ModifyWorldTransform(&t, rightMultiply ? MWT_RIGHTMULTIPLY : MWT_LEFTMULTIPLY);
 }
 
-void CIND18015View::Rotate(CDC* pDC, float angle, bool rightMultiply)
+void CIND18015View::Rotate(CDC* pDC, float angle, bool rightMultiply = false)
 {
 	XFORM t = {
 		cos(RAD(angle)), -sin(RAD(angle)),
@@ -175,54 +186,38 @@ void CIND18015View::Rotate(CDC* pDC, float angle, bool rightMultiply)
 	pDC->ModifyWorldTransform(&t, rightMultiply ? MWT_RIGHTMULTIPLY : MWT_LEFTMULTIPLY);
 }
 
-void CIND18015View::DrawCactus(CDC* pDC, SIZE scale, POINT translate, int selfRotationAngle, HENHMETAFILE mf) {
-	this->Scale(pDC, scale.cx, scale.cy, true);
-	this->Translate(pDC, -scale.cx / 2.0 * squareLength, -scale.cy * squareLength, true);
-	this->Rotate(pDC, selfRotationAngle, true);
-	this->Translate(pDC, translate.x, translate.y, true);
-	this->Rotate(pDC, wholeCactusRotAngle, true);
-
-	PlayEnhMetaFile(pDC->GetSafeHdc(), mf, CRect(POINT{ 0,0 }, SIZE{ squareLength, squareLength }));
-
-	this->ResetWorldTransform(pDC);
+void CIND18015View::RotateAroundPoint(CDC* pDC, POINT point, float angle)
+{
+	this->Translate(pDC, point.x, point.y);
+	this->Rotate(pDC, angle);
+	this->Translate(pDC, -point.x, -point.y);
 }
 
-void CIND18015View::ResetWorldTransform(CDC* pDC) {
-	constexpr XFORM default = {
-		1, 0, 0,
-		1, 0, 0,
-	};
+void CIND18015View::DrawCactus(CDC* pDC, SIZE scale, POINT translate, int selfRotationAngle, HENHMETAFILE mf) {
+	XFORM prevTransform;
+	GetWorldTransform(pDC->GetSafeHdc(), &prevTransform);
+	
+	this->Translate(pDC, translate.x, translate.y);
+	this->Rotate(pDC, selfRotationAngle);
+	this->Scale(pDC, scale.cx, scale.cy);
 
-	SetWorldTransform(pDC->GetSafeHdc(), &default);
+	PlayEnhMetaFile(pDC->GetSafeHdc(), mf, CRect(POINT{ -squareLength / 2, -squareLength }, SIZE{ squareLength, squareLength }));
+
+	this->UndoWorldTransform(pDC, prevTransform);
 }
 
 void CIND18015View::UndoWorldTransform(CDC* pDC, XFORM& xForm) {
 	SetWorldTransform(pDC->GetSafeHdc(), &xForm);
 }
 
-void CIND18015View::ResetViewportOrg(CDC* pDC) {
-	SetViewportOrgEx(pDC->GetSafeHdc(), 0, 0, NULL);
-}
-
-void CIND18015View::UndoViewportOrg(CDC* pDC, POINT org) {
-	SetViewportOrgEx(pDC->GetSafeHdc(), org.x, org.y, NULL);
-}
-
 void CIND18015View::DrawFigure(CDC* pDC)
 {
-	int oldGraphicsMode = SetGraphicsMode(pDC->GetSafeHdc(), GM_ADVANCED);
-
 	constexpr POINT bottomCircleInVase = { squareLength * 10, squareLength * (squareCount - 3) };
-	constexpr POINT circleAbove = { 0, -squareLength * 3 };
-	constexpr POINT firstCircleOnRight = { squareLength * 2.125, -squareLength * 5 };
-	constexpr POINT secondCircleOnRight = { squareLength * 5, -squareLength * 5 };
-	constexpr POINT bottomCircleOnLeft = { -2 * squareLength, -5 * squareLength };
-	constexpr POINT topCircleOnLeft = { -2 * squareLength, -8 * squareLength };
-
-	XFORM xFormOld;
-
-	SetViewportOrgEx(pDC->GetSafeHdc(), bottomCircleInVase.x, bottomCircleInVase.y, NULL);
-	GetWorldTransform(pDC->GetSafeHdc(), &xFormOld);
+	constexpr POINT circleAbove = { bottomCircleInVase.x + 0, bottomCircleInVase.y - squareLength * 3 };
+	constexpr POINT firstCircleOnRight = { bottomCircleInVase.x + squareLength * 2.125, bottomCircleInVase.y - squareLength * 5 };
+	constexpr POINT secondCircleOnRight = { bottomCircleInVase.x + squareLength * 5, bottomCircleInVase.y - squareLength * 5 };
+	constexpr POINT bottomCircleOnLeft = { bottomCircleInVase.x + -2 * squareLength, bottomCircleInVase.y - 5 * squareLength };
+	constexpr POINT topCircleOnLeft = { bottomCircleInVase.x + -2 * squareLength, bottomCircleInVase.y - 8 * squareLength };
 
 	constexpr COLORREF CIRCLE_GREEN = RGB(0, 204, 0);
 
@@ -230,86 +225,69 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	constexpr long thinCactusHeightFactor = 4;
 
 	constexpr SIZE thinCactusScale = { thinCactusWidthFactor, thinCactusHeightFactor };
-	
+
 	constexpr long mediumCactusWidthFactor = 2;
 	constexpr long mediumCactusHeightFactor = 3;
 
 	constexpr SIZE mediumCactusScale = { mediumCactusWidthFactor, mediumCactusHeightFactor };
-	
+
 	constexpr double fatCactusWidthFactor = 2.5;
 	constexpr long fatCactusHeightFactor = 3;
 
 	constexpr SIZE fatCactusScale = { fatCactusWidthFactor, fatCactusHeightFactor };
 
-	// bottom svetli kaktus
+	XFORM xFormOld;
+	GetWorldTransform(pDC->GetSafeHdc(), &xFormOld);
 
-	this->DrawCactus(pDC, fatCactusScale, { 0, 0 }, 0, this->cactusPartLightMF);
+	this->RotateAroundPoint(pDC, bottomCircleInVase, wholeCactusRotAngle);
+
+	// bottom svetli kaktus
+	this->DrawCactus(pDC, fatCactusScale, bottomCircleInVase, 0, this->cactusPartLightMF);
 
 	// kaktus iznad bottom svetlog
-
-	this->DrawCactus(pDC, thinCactusScale, { 0, circleAbove.y }, 0, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, circleAbove, 0, this->cactusPartMF);
 
 	// oba kaktusa rotirana za 45
-
-	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 2 }, 45, this->cactusPartMF);
-
-	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 2 }, -45, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 4 }, 45, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 4 }, -45, this->cactusPartMF);
 
 	// prvi kaktus desno
-
 	this->DrawCactus(pDC, mediumCactusScale, firstCircleOnRight, -90, this->cactusPartMF);
 
 	// rotirajuci kaktus
-
 	this->DrawCactus(pDC, mediumCactusScale, firstCircleOnRight, smallCactusRotAngle, this->cactusPartLightMF);
 
 	// krajnja desna 2 kaktusa
 
 	// 1.
-
 	this->DrawCactus(pDC, mediumCactusScale, secondCircleOnRight, -45, this->cactusPartMF);
 
 	// 2.
-
 	this->DrawCactus(pDC, mediumCactusScale, secondCircleOnRight, -45 - 90, this->cactusPartMF);
 
 	// levi kaktus
-
 	this->DrawCactus(pDC, mediumCactusScale, bottomCircleOnLeft, 90, this->cactusPartMF);
 
 	// kaktus iznad levog
-
 	this->DrawCactus(pDC, mediumCactusScale, bottomCircleOnLeft, 0, this->cactusPartMF);
 
 	// kaktus gore levo
-
 	this->DrawCactus(pDC, fatCactusScale, topCircleOnLeft, 0, this->cactusPartMF);
 
 	// staticni kruzic
-
-	this->DrawCircle(pDC, 0, 0, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, bottomCircleInVase, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
 	// kruzici koji se rotiraju sa celom slikom
 
-	this->Rotate(pDC, wholeCactusRotAngle, true);
+	this->DrawCircle(pDC, circleAbove, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
-	this->DrawCircle(pDC, circleAbove.x, circleAbove.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, firstCircleOnRight, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, secondCircleOnRight, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
-	this->DrawCircle(pDC, firstCircleOnRight.x, firstCircleOnRight.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-	this->DrawCircle(pDC, secondCircleOnRight.x, secondCircleOnRight.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, bottomCircleOnLeft, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, topCircleOnLeft, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
-	this->DrawCircle(pDC, bottomCircleOnLeft.x, bottomCircleOnLeft.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-	this->DrawCircle(pDC, topCircleOnLeft.x, topCircleOnLeft.y, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-
-	this->ResetWorldTransform(pDC);
-	this->ResetViewportOrg(pDC);
-
-	// vaza
-
-	constexpr COLORREF VASE_GOLD = RGB(222, 148, 0);
-
-	this->DrawVase(pDC, RGB(0, 0, 0), VASE_GOLD);
-	SetGraphicsMode(pDC->GetSafeHdc(), oldGraphicsMode);
+	this->UndoWorldTransform(pDC, xFormOld);
 }
 
 void CIND18015View::DrawGrid(CDC* pDC, POINT start, COLORREF color)
@@ -359,7 +337,7 @@ void CIND18015View::DrawVase(CDC* pDC, COLORREF color, COLORREF fill)
 	pDC->SelectObject(prevPen);
 }
 
-void CIND18015View::DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF color, COLORREF fill)
+void CIND18015View::DrawCircle(CDC* pDC, POINT point, int r, COLORREF color, COLORREF fill)
 {
 	CPen newPen(PS_SOLID | PS_GEOMETRIC, 1, color);
 	CBrush newBrush(fill);
@@ -367,7 +345,7 @@ void CIND18015View::DrawCircle(CDC* pDC, int cx, int cy, int r, COLORREF color, 
 	CPen* prevPen = pDC->SelectObject(&newPen);
 	CBrush* prevBrush = pDC->SelectObject(&newBrush);
 
-	pDC->Ellipse(cx - r / 2, cy + r / 2, cx + r / 2, cy - r / 2);
+	pDC->Ellipse(point.x - r / 2, point.y + r / 2, point.x + r / 2, point.y - r / 2);
 
 	pDC->SelectObject(prevBrush);
 	pDC->SelectObject(prevPen);
