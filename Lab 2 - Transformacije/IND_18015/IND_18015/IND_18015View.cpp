@@ -80,7 +80,7 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	int oldGraphicsMode = SetGraphicsMode(pDC->GetSafeHdc(), GM_ADVANCED);
 
-	this->RotateAroundPoint(pDC, { dim / 2, dim / 2 }, 90);
+	this->RotateAroundPoint(pDC, { dim / 2, dim / 2 }, 180);
 
 	// pozadina
 
@@ -98,12 +98,12 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	this->DrawVase(pDC, RGB(0, 0, 0), VASE_GOLD);
 
-	POINT textLocation = { squareLength * (squareCount - 1), squareLength };
+	POINT textLocation = { squareLength*1.5 , squareLength * 1.5 };
 
 	LOGFONTW logFont{};
-	logFont.lfEscapement = -900;
 	logFont.lfHeight = 40;
-	logFont.lfOrientation = -900;
+	//logFont.lfEscapement = -900;
+	//logFont.lfOrientation = -900;
 
 	this->DrawTextString(pDC, textLocation.x, textLocation.y, CString("18015 Andrija Tosic"), logFont, RGB(0, 0, 0), RGB(255, 255, 0));
 
@@ -196,7 +196,7 @@ void CIND18015View::RotateAroundPoint(CDC* pDC, POINT point, float angle)
 void CIND18015View::DrawCactus(CDC* pDC, SIZE scale, POINT translate, int selfRotationAngle, HENHMETAFILE mf) {
 	XFORM prevTransform;
 	GetWorldTransform(pDC->GetSafeHdc(), &prevTransform);
-	
+
 	this->Translate(pDC, translate.x, translate.y);
 	this->Rotate(pDC, selfRotationAngle);
 	this->Scale(pDC, scale.cx, scale.cy);
@@ -213,16 +213,16 @@ void CIND18015View::UndoWorldTransform(CDC* pDC, XFORM& xForm) {
 void CIND18015View::DrawFigure(CDC* pDC)
 {
 	constexpr POINT bottomCircleInVase = { squareLength * 10, squareLength * (squareCount - 3) };
-	constexpr POINT circleAbove = { bottomCircleInVase.x + 0, bottomCircleInVase.y - squareLength * 3 };
-	constexpr POINT firstCircleOnRight = { bottomCircleInVase.x + squareLength * 2.125, bottomCircleInVase.y - squareLength * 5 };
-	constexpr POINT secondCircleOnRight = { bottomCircleInVase.x + squareLength * 5, bottomCircleInVase.y - squareLength * 5 };
-	constexpr POINT bottomCircleOnLeft = { bottomCircleInVase.x + -2 * squareLength, bottomCircleInVase.y - 5 * squareLength };
-	constexpr POINT topCircleOnLeft = { bottomCircleInVase.x + -2 * squareLength, bottomCircleInVase.y - 8 * squareLength };
+	constexpr POINT circleAbove = { bottomCircleInVase.x, bottomCircleInVase.y - squareLength * 3 };
+	constexpr POINT circleAbove2 = { circleAbove.x, circleAbove.y - 3 * squareLength };
+	constexpr POINT circleAbove3 = { circleAbove2.x, circleAbove2.y - 3 * squareLength };
+	constexpr POINT circleUpperLeft = { circleAbove.x - 2 * squareLength, circleAbove.y - 2 * squareLength };
+	constexpr POINT circleUpperLeft2 = { circleUpperLeft.x - 2 * squareLength, circleUpperLeft.y - 2 * squareLength };
 
 	constexpr COLORREF CIRCLE_GREEN = RGB(0, 204, 0);
 
 	constexpr long thinCactusWidthFactor = 1;
-	constexpr long thinCactusHeightFactor = 4;
+	constexpr long thinCactusHeightFactor = 3;
 
 	constexpr SIZE thinCactusScale = { thinCactusWidthFactor, thinCactusHeightFactor };
 
@@ -239,53 +239,53 @@ void CIND18015View::DrawFigure(CDC* pDC)
 	XFORM xFormOld;
 	GetWorldTransform(pDC->GetSafeHdc(), &xFormOld);
 
-	this->RotateAroundPoint(pDC, bottomCircleInVase, wholeCactusRotAngle);
+	// bottom fat kaktus (ne rotira se)
+	this->DrawCactus(pDC, fatCactusScale, bottomCircleInVase, 0, this->cactusPartMF);
 
-	// bottom svetli kaktus
-	this->DrawCactus(pDC, fatCactusScale, bottomCircleInVase, 0, this->cactusPartLightMF);
+	// gornja grana:
 
-	// kaktus iznad bottom svetlog
+	// kaktus iznad
 	this->DrawCactus(pDC, thinCactusScale, circleAbove, 0, this->cactusPartMF);
+	
+	// kaktus iznad 2
+	this->DrawCactus(pDC, fatCactusScale, circleAbove2, 0, this->cactusPartMF);
 
-	// oba kaktusa rotirana za 45
-	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 4 }, 45, this->cactusPartMF);
+	// 2 fat kaktusa iznad
+	this->DrawCactus(pDC, fatCactusScale, circleAbove3, 45, this->cactusPartMF);
+	this->DrawCactus(pDC, fatCactusScale, circleAbove3, -45, this->cactusPartMF);
+
+
+	// upper kaktus rotiran za -45
 	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 4 }, -45, this->cactusPartMF);
+	
+	// leva grana:
 
-	// prvi kaktus desno
-	this->DrawCactus(pDC, mediumCactusScale, firstCircleOnRight, -90, this->cactusPartMF);
+	this->RotateAroundPoint(pDC, circleAbove, wholeCactusRotAngle);
 
-	// rotirajuci kaktus
-	this->DrawCactus(pDC, mediumCactusScale, firstCircleOnRight, smallCactusRotAngle, this->cactusPartLightMF);
+	// upper kaktus rotiran za 45
+	this->DrawCactus(pDC, thinCactusScale, { circleAbove.x, circleAbove.y + squareLength / 4 }, 45, this->cactusPartLightMF);
+	
+	// upper left fat kaktus
+	this->DrawCactus(pDC, fatCactusScale, circleUpperLeft, 45, this->cactusPartMF);
 
-	// krajnja desna 2 kaktusa
+	// tri upper left2 thin kaktusa
+	this->DrawCactus(pDC, thinCactusScale, circleUpperLeft2, 0, this->cactusPartMF);
+	this->DrawCactus(pDC, thinCactusScale, circleUpperLeft2, 45 + this->smallCactusRotAngle, this->cactusPartLightMF);
+	this->DrawCactus(pDC, thinCactusScale, circleUpperLeft2, 90, this->cactusPartMF);
 
-	// 1.
-	this->DrawCactus(pDC, mediumCactusScale, secondCircleOnRight, -45, this->cactusPartMF);
+	this->UndoWorldTransform(pDC, xFormOld);
 
-	// 2.
-	this->DrawCactus(pDC, mediumCactusScale, secondCircleOnRight, -45 - 90, this->cactusPartMF);
-
-	// levi kaktus
-	this->DrawCactus(pDC, mediumCactusScale, bottomCircleOnLeft, 90, this->cactusPartMF);
-
-	// kaktus iznad levog
-	this->DrawCactus(pDC, mediumCactusScale, bottomCircleOnLeft, 0, this->cactusPartMF);
-
-	// kaktus gore levo
-	this->DrawCactus(pDC, fatCactusScale, topCircleOnLeft, 0, this->cactusPartMF);
-
-	// staticni kruzic
+	// staticni kruzici
+	this->DrawCircle(pDC, circleAbove, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 	this->DrawCircle(pDC, bottomCircleInVase, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, circleAbove2, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, circleAbove3, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+
+	this->RotateAroundPoint(pDC, circleAbove, wholeCactusRotAngle);
 
 	// kruzici koji se rotiraju sa celom slikom
-
-	this->DrawCircle(pDC, circleAbove, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-
-	this->DrawCircle(pDC, firstCircleOnRight, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-	this->DrawCircle(pDC, secondCircleOnRight, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-
-	this->DrawCircle(pDC, bottomCircleOnLeft, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
-	this->DrawCircle(pDC, topCircleOnLeft, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, circleUpperLeft, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
+	this->DrawCircle(pDC, circleUpperLeft2, squareLength, RGB(0, 0, 0), CIRCLE_GREEN);
 
 	this->UndoWorldTransform(pDC, xFormOld);
 }
@@ -389,16 +389,16 @@ void CIND18015View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 		this->gridEnabled = !this->gridEnabled;
 		break;
 	case VK_LEFT:
-		this->smallCactusRotAngle += 10;
+		this->smallCactusRotAngle += 30;
 		break;
 	case VK_RIGHT:
-		this->smallCactusRotAngle -= 10;
+		this->smallCactusRotAngle -= 30;
 		break;
 	case 'A':
-		this->wholeCactusRotAngle += 10;
+		this->wholeCactusRotAngle += 30;
 		break;
 	case 'D':
-		this->wholeCactusRotAngle -= 10;
+		this->wholeCactusRotAngle -= 30;
 		break;
 	default:
 		break;
