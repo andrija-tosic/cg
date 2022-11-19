@@ -39,28 +39,23 @@ BEGIN_MESSAGE_MAP(CIND18015View, CView)
 	ON_COMMAND(ID_FILE_PRINT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, &CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CView::OnFilePrintPreview)
+	ON_WM_ERASEBKGND()
 END_MESSAGE_MAP()
 
 // CIND18015View construction/destruction
 
 CIND18015View::CIND18015View() noexcept
 {
-	for (int i = 0; i < 9; i++) {
-		CString path = CString(std::string("res/monapuzzle" + std::to_string(i) + ".dib").c_str());
-		this->pieces[i].Load(path);
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			CString path = CString(std::string("res/monapuzzle" + std::to_string(this->pieces[i][j].index) + ".dib").c_str());
+			this->pieces[i][j].image.Load(path);
+		}
 	}
 }
 
 CIND18015View::~CIND18015View()
 {
-}
-
-BOOL CIND18015View::PreCreateWindow(CREATESTRUCT& cs)
-{
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-
-	return CView::PreCreateWindow(cs);
 }
 
 // CIND18015View drawing
@@ -105,27 +100,80 @@ void CIND18015View::Mirror(CDC* pDC, bool mx, bool my, bool rightMultiply)
 {
 	XFORM matrix =
 	{
-		-mx, 0,
-		0, -my,
+		mx ? -1 : 1, 0,
+		0, my ? -1 : 1,
 	};
 
 	ModifyWorldTransform(pDC->m_hDC, &matrix, rightMultiply ? MWT_RIGHTMULTIPLY : MWT_LEFTMULTIPLY);
 
 }
 
+void CIND18015View::DrawAxes(CDC* pDC)
+{
+	POINT curPos = pDC->GetCurrentPosition();
+	CPen* prevPen = pDC->GetCurrentPen();
+
+	CPen xAxisPen(PS_SOLID, 5, RGB(255, 0, 0));
+	pDC->SelectObject(&xAxisPen);
+	pDC->LineTo(curPos.x, curPos.y + 100);
+	pDC->MoveTo(curPos.x, curPos.y);
+	CPen yAxisPen(PS_SOLID, 5, RGB(0, 0, 255));
+	pDC->SelectObject(&yAxisPen);
+	pDC->LineTo(curPos.x + 100, curPos.y);
+	pDC->MoveTo(curPos.x, curPos.y);
+
+	pDC->SelectObject(prevPen);
+}
+
+
 void CIND18015View::DrawPuzzle(CDC* pDC)
 {
 	int oldGmode = SetGraphicsMode(pDC->m_hDC, GM_ADVANCED);
 
-	for (int i = 0; i < 9; i++) {
-		this->DrawPiece(pDC, pieces[i]);
+	XFORM tOld;
+
+	int imageWidth = pieces[0][0].image.Width();
+
+	double factor = imageWidth / squareLength;
+	int size = factor * squareLength;
+
+	int i = 0, j = 0;
+
+	int globalRot = -90;
+
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			pDC->GetWorldTransform(&tOld);
+
+			this->Translate(pDC, dim / 2, dim / 2);
+			this->Mirror(pDC, false, true);
+			this->Translate(pDC, -dim / 2, -dim / 2);
+
+			this->Translate(pDC, pieces[i][j].cxOffset, pieces[i][j].cyOffset);
+			this->Translate(pDC, - squareLength + j * 150, -squareLength + i * 150);
+			
+			//TRT
+			this->Translate(pDC, imageWidth / 2.0, imageWidth / 2.0);
+			this->Rotate(pDC, (globalRot + pieces[i][j].rotAngle));
+			this->Translate(pDC, -imageWidth / 2.0, -imageWidth / 2.0);
+
+
+			if (i * 3 + j == 1) {
+				this->DrawPiece(pDC, this->pieces[i][j].image, { i * size, j * size }, 25, true);
+			}
+			else {
+				this->DrawPiece(pDC, this->pieces[i][j].image, { i * size, j * size }, 25, false);
+			}
+			pDC->SetWorldTransform(&tOld);
+
+		}
 	}
 
 
 	SetGraphicsMode(pDC->m_hDC, oldGmode);
 }
 
-void CIND18015View::DrawPiece(CDC* pDC, DImage& piece)
+void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAngle, bool colorFilter)
 {
 	CBitmap bmpImage;
 	CBitmap bmpMask;
@@ -134,27 +182,55 @@ void CIND18015View::DrawPiece(CDC* pDC, DImage& piece)
 	srcDC.CreateCompatibleDC(pDC);
 	destDC.CreateCompatibleDC(pDC);
 
-	unsigned char* bitmapBits = piece.GetDIBBits();
-	bmpImage.CreateBitmap(piece.Width(), piece.Height(), 1, piece.BPP(), bitmapBits);
+	bmpImage.CreateCompatibleBitmap(pDC, piece.Width(), piece.Height());
+
+	bmpImage.SetBitmapBits(piece.Width() * piece.Height() * piece.BPP(), piece.GetDIBBits());
 
 	bmpMask.CreateBitmap(piece.Width(), piece.Height(), 1, 1, NULL);
 
-	COLORREF clrTopLeft = srcDC.GetPixel(0, 0); // test
-
+	// Ucitavanje bitmapa u DC
 	CBitmap* oldSrcBmp = srcDC.SelectObject(&bmpImage);
 	CBitmap* oldDestBmp = destDC.SelectObject(&bmpMask);
 
-	clrTopLeft = srcDC.GetPixel(0, 0); 
+	// Popunjavanje monohromatske bitmape
+	COLORREF clrTopLeft = srcDC.GetPixel(0, 0);
 	COLORREF clrSaveBk = srcDC.SetBkColor(clrTopLeft);
 
 	destDC.BitBlt(0, 0, piece.Width(), piece.Height(), &srcDC, 0, 0, SRCCOPY);
 
+	unsigned char* bitmapBits = piece.GetDIBBits();
+
+	for (int i = 0; i < piece.Width() * piece.Height() * piece.BPP(); i += 4) {
+		byte B = bitmapBits[i];
+		byte G = bitmapBits[i + 1];
+		byte R = bitmapBits[i + 2];
+		byte A = bitmapBits[i + 3];
+
+		if (!colorFilter) {
+			byte gr = 64 + (R + G + B) / 3;
+			if (gr > 255) {
+				gr = 255;
+			}
+
+			bitmapBits[i] = bitmapBits[i + 1] = bitmapBits[i + 2] = bitmapBits[i + 3] = gr;
+		}
+		else {
+			bitmapBits[i] = min(bitmapBits[i] + 64, 255);
+			bitmapBits[i + 1] = bitmapBits[i + 2] = bitmapBits[i + 3] = 0;
+		}
+	}
+
+	bmpImage.SetBitmapBits(piece.Width() * piece.Height() * piece.BPP(), bitmapBits);
+
+
+	// Markiranje pozadine u srcDC (u crno)
 	COLORREF clrSaveDstText = srcDC.SetTextColor(RGB(255, 255, 255));
 	srcDC.SetBkColor(RGB(0, 0, 0));
 
 	srcDC.BitBlt(0, 0, piece.Width(), piece.Height(), &destDC, 0, 0, SRCAND);
 
-	// undo
+
+	// Undo
 	destDC.SetTextColor(clrSaveDstText);
 	srcDC.SetBkColor(clrSaveBk);
 
@@ -164,16 +240,19 @@ void CIND18015View::DrawPiece(CDC* pDC, DImage& piece)
 	srcDC.DeleteDC();
 	destDC.DeleteDC();
 
-	// priprema prikaza
+	// Priprema prikaza
 	CDC tempDC;
 	tempDC.CreateCompatibleDC(pDC);
+
 	CBitmap* bmpOldT = tempDC.SelectObject(&bmpMask);
 	pDC->BitBlt(0, 0, piece.Width(), piece.Height(), &tempDC, 0, 0, SRCAND);
 
-	// prikaz bitmape
+	// Prikaz bitmape
 	tempDC.SelectObject(&bmpImage);
+
 	pDC->BitBlt(0, 0, piece.Width(), piece.Height(), &tempDC, 0, 0, SRCPAINT);
 	tempDC.SelectObject(bmpOldT);
+
 }
 
 void CIND18015View::DrawGrid(CDC* pDC, POINT start, COLORREF color)
@@ -210,57 +289,31 @@ void CIND18015View::OnDraw(CDC* pDC)
 	CRect c;
 	GetClientRect(&c);
 
+	CDC memDC;
+	memDC.CreateCompatibleDC(pDC);
 
 	CBitmap bm;
 	bm.CreateCompatibleBitmap(pDC, c.Width(), c.Height());
 
 	memDC.SelectObject(&bm);
 
-	constexpr COLORREF BGCOLOR = RGB(221, 221, 221);
+	constexpr COLORREF BGCOLOR = RGB(255, 255, 255);
 	CRect rect(0, 0, dim, dim);
 	CBrush background(BGCOLOR);
 	memDC.FillRect(&rect, &background);
 
-	this->DrawPuzzle(&memDC);
-
 	constexpr int GRID_GREY = RGB(238, 238, 238);
 	this->DrawGrid(&memDC, { 0, 0 }, GRID_GREY);
 
+	this->DrawPuzzle(&memDC);
+
 	pDC->BitBlt(0, 0, c.Width(), c.Height(), &memDC, 0, 0, SRCCOPY);
-}
-
-
-// CIND18015View printing
-
-BOOL CIND18015View::OnPreparePrinting(CPrintInfo* pInfo)
-{
-	// default preparation
-	return DoPreparePrinting(pInfo);
-}
-
-void CIND18015View::OnBeginPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	// TODO: add extra initialization before printing
-}
-
-void CIND18015View::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
-{
-	// TODO: add cleanup after printing
 }
 
 
 // CIND18015View diagnostics
 
 #ifdef _DEBUG
-void CIND18015View::AssertValid() const
-{
-	CView::AssertValid();
-}
-
-void CIND18015View::Dump(CDumpContext& dc) const
-{
-	CView::Dump(dc);
-}
 
 CIND18015Doc* CIND18015View::GetDocument() const // non-debug version is inline
 {
@@ -273,9 +326,10 @@ CIND18015Doc* CIND18015View::GetDocument() const // non-debug version is inline
 // CIND18015View message handlers
 
 
-void CIND18015View::OnPrepareDC(CDC* pDC, CPrintInfo* pInfo)
-{
-	this->memDC.CreateCompatibleDC(pDC);
 
-	CView::OnPrepareDC(pDC, pInfo);
+BOOL CIND18015View::OnEraseBkgnd(CDC* pDC)
+{
+	return true;
+
+	return CView::OnEraseBkgnd(pDC);
 }

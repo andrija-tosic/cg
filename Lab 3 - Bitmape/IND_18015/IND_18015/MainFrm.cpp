@@ -71,8 +71,16 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
+
+	constexpr int toolbarHeight = 120;
+	constexpr int dim = 500;
+
+	int width = dim + 20;
+	int height = dim + toolbarHeight;
+	cs.cx = width;
+	cs.cy = height;
+	cs.x = GetSystemMetrics(SM_CXSCREEN) / 2 - width / 2;
+	cs.y = GetSystemMetrics(SM_CYSCREEN) / 2 - height / 2;
 
 	return TRUE;
 }
