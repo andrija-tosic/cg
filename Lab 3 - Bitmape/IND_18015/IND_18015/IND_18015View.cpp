@@ -159,18 +159,17 @@ void CIND18015View::DrawPuzzle(CDC* pDC)
 
 
 			if (i * 3 + j == 1) {
-				this->DrawPiece(pDC, this->pieces[i][j].image, { i * size, j * size }, 25, true);
+				this->DrawPiece(pDC, this->pieces[i][j].image, true);
 			}
 			else {
-				this->DrawPiece(pDC, this->pieces[i][j].image, { i * size, j * size }, 25, false);
+				this->DrawPiece(pDC, this->pieces[i][j].image, false);
 			}
 			pDC->SetWorldTransform(&tOld);
-
 		}
 	}
 }
 
-void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAngle, bool colorFilter)
+void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, bool colorFilter)
 {
 	CBitmap bmpImage;
 	CBitmap bmpMask;
@@ -208,9 +207,8 @@ void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAng
 
 		if (!colorFilter) {
 			byte gr = 64 + (R + G + B) / 3;
-			if (gr > 255) {
-				gr = 255;
-			}
+
+			gr = min(gr, 255);
 
 			bitmapBits[i] = bitmapBits[i + 1] = bitmapBits[i + 2] = bitmapBits[i + 3] = gr;
 		}

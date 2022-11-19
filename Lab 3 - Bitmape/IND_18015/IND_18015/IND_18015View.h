@@ -60,7 +60,7 @@ public:
 	void DrawAxes(CDC* pDC);
 
 	void DrawGrid(CDC* pDC, POINT start, COLORREF borderColor);
-	void DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAngle, bool colorFilter);
+	void DrawPiece(CDC* pDC, DImage& piece, bool colorFilter);
 	void DrawPuzzle(CDC* memDC);
 	// Overrides
 public:
