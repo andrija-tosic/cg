@@ -4641,7 +4641,7 @@ bool DImage::Load(CString fileName)
 			&m_nWidth, &m_nHeight, &m_nBPP, 0);
 		//--------------------
 		f.Close();
-		delete buf;
+		delete[] buf;
 		if(m_pBmp) delete m_pBmp;
 		m_pBmp = new CBitmap();
 		m_pBmp->CreateBitmap( m_nWidth, m_nHeight, 1, 32, NULL);
