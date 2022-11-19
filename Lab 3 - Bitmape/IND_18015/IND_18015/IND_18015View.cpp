@@ -4,7 +4,7 @@
 
 #include "pch.h"
 #include "framework.h"
-// SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
+// SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail	
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
 #include "IND_18015.h"
@@ -21,6 +21,8 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <thread>
+#include <vector>
 
 #define RAD(x) (x*M_PI)/180
 #define DEG(x) (x*180)/M_PI
@@ -128,8 +130,6 @@ void CIND18015View::DrawAxes(CDC* pDC)
 
 void CIND18015View::DrawPuzzle(CDC* pDC)
 {
-	int oldGmode = SetGraphicsMode(pDC->m_hDC, GM_ADVANCED);
-
 	XFORM tOld;
 
 	int imageWidth = pieces[0][0].image.Width();
@@ -150,8 +150,8 @@ void CIND18015View::DrawPuzzle(CDC* pDC)
 			this->Translate(pDC, -dim / 2, -dim / 2);
 
 			this->Translate(pDC, pieces[i][j].cxOffset, pieces[i][j].cyOffset);
-			this->Translate(pDC, - squareLength + j * 150, -squareLength + i * 150);
-			
+			this->Translate(pDC, -squareLength + j * 150, -squareLength + i * 150);
+
 			//TRT
 			this->Translate(pDC, imageWidth / 2.0, imageWidth / 2.0);
 			this->Rotate(pDC, (globalRot + pieces[i][j].rotAngle));
@@ -168,9 +168,6 @@ void CIND18015View::DrawPuzzle(CDC* pDC)
 
 		}
 	}
-
-
-	SetGraphicsMode(pDC->m_hDC, oldGmode);
 }
 
 void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAngle, bool colorFilter)
@@ -198,9 +195,12 @@ void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAng
 
 	destDC.BitBlt(0, 0, piece.Width(), piece.Height(), &srcDC, 0, 0, SRCCOPY);
 
-	unsigned char* bitmapBits = piece.GetDIBBits();
+	
+	// Filtriranje boje
+	unsigned char* bitmapBits = new unsigned char[piece.Width() * piece.Height() * piece.BPP()];
+	memcpy(bitmapBits, piece.GetDIBBits(), piece.Width() * piece.Height() * piece.BPP());
 
-	for (int i = 0; i < piece.Width() * piece.Height() * piece.BPP(); i += 4) {
+	for (int i = 0; i < piece.Width() * piece.Height() * piece.BPP(); i += piece.BPP()) {
 		byte B = bitmapBits[i];
 		byte G = bitmapBits[i + 1];
 		byte R = bitmapBits[i + 2];
@@ -222,6 +222,7 @@ void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAng
 
 	bmpImage.SetBitmapBits(piece.Width() * piece.Height() * piece.BPP(), bitmapBits);
 
+	delete[] bitmapBits;
 
 	// Markiranje pozadine u srcDC (u crno)
 	COLORREF clrSaveDstText = srcDC.SetTextColor(RGB(255, 255, 255));
@@ -253,6 +254,7 @@ void CIND18015View::DrawPiece(CDC* pDC, DImage& piece, POINT topLeft, int rotAng
 	pDC->BitBlt(0, 0, piece.Width(), piece.Height(), &tempDC, 0, 0, SRCPAINT);
 	tempDC.SelectObject(bmpOldT);
 
+	tempDC.DeleteDC();
 }
 
 void CIND18015View::DrawGrid(CDC* pDC, POINT start, COLORREF color)
@@ -284,6 +286,7 @@ void CIND18015View::OnDraw(CDC* pDC)
 	if (!pDoc)
 		return;
 
+
 	// pozadina
 
 	CRect c;
@@ -291,6 +294,7 @@ void CIND18015View::OnDraw(CDC* pDC)
 
 	CDC memDC;
 	memDC.CreateCompatibleDC(pDC);
+	int oldGmode = SetGraphicsMode(memDC.m_hDC, GM_ADVANCED);
 
 	CBitmap bm;
 	bm.CreateCompatibleBitmap(pDC, c.Width(), c.Height());
@@ -308,6 +312,10 @@ void CIND18015View::OnDraw(CDC* pDC)
 	this->DrawPuzzle(&memDC);
 
 	pDC->BitBlt(0, 0, c.Width(), c.Height(), &memDC, 0, 0, SRCCOPY);
+
+	memDC.DeleteDC();
+
+	SetGraphicsMode(memDC.m_hDC, oldGmode);
 }
 
 
