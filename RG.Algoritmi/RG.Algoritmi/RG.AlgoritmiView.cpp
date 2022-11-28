@@ -43,36 +43,65 @@ CRGAlgoritmiView::~CRGAlgoritmiView()
 
 // CRGAlgoritmiView drawing
 
-void swap(int& a, int& b) {
-	int pom;
-	pom = a;
-	a = b;
-	b = pom;
-}
-
+// Pokriva sve slucajeve.
 void BresenhamLine(CDC* pDC, int x0, int y0, int x1, int y1) {
-	float dx = x1 - x0;
-	float dy = y1 - y0;
+	int dx = x1 - x0;
+	int dy = y1 - y0;
 
-	float m = dx == 0 ? INT_MAX : dy / dx;
+	float m = 1.0*dy / dx;
 
-	int d = 2 * dy - dx;
+	int d;
 
-	int incr1 = 2 * abs(dy - dx);
+	int incr1;
+
+	// Inkrement kad je di < 0 je isti bez obzira da li je plot po x ili y.
 	int incr2 = 2 * abs(dy);
 
-	int y = y0;
+	int start, end, j;
 
-	for (int x = min(x0, x1); x <= max(x0, x1); x++) {
-		if (d > 0) {
-			m > 0 ? y++ : y--;
+	if (m >= 1 || m <= -1) {
+		// Plot po y.
+		start = min(y0, y1);
+		end = max(y0, y1);
+		j = y0 < y1 ? x0 : x1;
+
+		// Iz izvodjenja.
+		d = 2 * abs(dy);
+		incr1 = abs(dy);
+	}
+	else {
+		// Plot po x.
+		start = min(x0, x1);
+		end = max(x0, x1);
+		j = x0 < x1 ? y0 : y1;
+
+		// Iz izvodjenja.
+		d = 2 * abs(dy) - abs(dx);
+		incr1 = 2 * abs(dy - dx);
+	}
+
+	for (int i = start; i <= end; i++) {
+		if (d >= 0) {
+
+			if (m > 0 && !isinf(m)) {
+				j++;
+			}
+			else if (m < 0 && !isinf(m)) {
+				j--;
+			}
+			
 			d += incr1;
 		}
 		else {
 			d += incr2;
 		}
 
-		pDC->SetPixel(x, y, RGB(0, 0, 255));
+		if (m >= 1 || m <= -1) {
+			pDC->SetPixel(j, i, RGB(0, 0, 255));
+		}
+		else {
+			pDC->SetPixel(i, j, RGB(0, 0, 255));
+		}
 	}
 }
 
@@ -169,15 +198,38 @@ void CRGAlgoritmiView::OnDraw(CDC* pDC)
 	PolyEllipse(pDC, 100, 100, RGB(0, 128, 0));
 	PolyEllipse(pDC, 100, 300, RGB(0, 0, 128));
 
-	NagibniAlgoritam(pDC, 20, 20, 300, 300);
-	NagibniAlgoritam(pDC, 20, 240, 300, 20);
+	//NagibniAlgoritam(pDC, 20, 20, 300, 300);
+	//NagibniAlgoritam(pDC, 20, 240, 300, 20);
 
-	BresenhamLine(pDC, 50, 30, 230, 100);
-	BresenhamLine(pDC, 0, 250, 400, 20);
-	BresenhamLine(pDC, 20, 20, 300, 20);
-	BresenhamLine(pDC, 30, 200, 30, 20);
 	
-	TrigEllipse(pDC, 50, 50, 500, 300);
+	// m > 0
+	BresenhamLine(pDC, 0, 0, 200, 200);
+	
+	// m < 0
+	BresenhamLine(pDC, 0, 200, 200, 0);
+	
+	// Horizontalna duz
+	BresenhamLine(pDC, 0, 0, 200, 0);
+
+	// Vertikalna duz
+	BresenhamLine(pDC, 0, 200, 0, 0);
+
+	/*********** Negativne vrednosti ************/
+
+	// m > 0
+	BresenhamLine(pDC, 0, 0, -200, -200);
+
+	// m < 0
+	BresenhamLine(pDC, 0, -200, -200, 0);
+
+	// Horizontalna duz
+	BresenhamLine(pDC, 0, 0, -200, 0);
+
+	// Vertikalna duz
+	BresenhamLine(pDC, 0, -200, 0, 0);
+
+	
+	TrigEllipse(pDC, 300, 0, 500, 300);
 }
 
 
