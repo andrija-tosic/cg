@@ -48,7 +48,7 @@ void BresenhamLine(CDC* pDC, int x0, int y0, int x1, int y1) {
 	int dx = x1 - x0;
 	int dy = y1 - y0;
 
-	float m = 1.0*dy / dx;
+	float m = 1.0 * dy / dx;
 
 	int d;
 
@@ -82,14 +82,13 @@ void BresenhamLine(CDC* pDC, int x0, int y0, int x1, int y1) {
 
 	for (int i = start; i <= end; i++) {
 		if (d >= 0) {
-
 			if (m > 0 && !isinf(m)) {
 				j++;
 			}
 			else if (m < 0 && !isinf(m)) {
 				j--;
 			}
-			
+
 			d += incr1;
 		}
 		else {
@@ -170,6 +169,52 @@ void TrigEllipse(CDC* pDC, int x1, int y1, int x2, int y2) {
 	}
 }
 
+void swap(int& a, int& b) {
+	int pom = a;
+	a = b;
+	b = pom;
+}
+
+void DrawPixel4(CDC* pDC, int x, int y, int x_off, int y_off, COLORREF col) {
+	pDC->SetPixel(x + x_off, y + y_off, col);
+	pDC->SetPixel(-x + x_off, y + y_off, col);
+	pDC->SetPixel(x + x_off, -y + y_off, col);
+	pDC->SetPixel(-x + x_off, -y + y_off, col);
+}
+
+void Diff2Ellipse(CDC* pDC, int x1, int y1, int x2, int y2, COLORREF col) {
+	int a = abs(x1 + x2) / 2;
+	int b = abs(y1 + y2) / 2;
+
+	int x_offset = x1 + abs(x2 - x1) / 2;
+	int y_offset = y1 + abs(y2 - y1) / 2;
+
+	float h = 7 * max(a, b);
+
+	float step = (2 * 3.14) / h;
+
+	float _x0 = a;
+	float _x1 = a * cos(step);
+
+	float _y0 = 0;
+	float _y1 = b * sin(step);
+
+	DrawPixel4(pDC, _x0, _y0, x_offset, y_offset, col);
+	DrawPixel4(pDC, _x1, _y1, x_offset, y_offset, col);
+
+	for (int i = 0; i <= h / 2; i++) {
+		float _x2 = (2 - step * step) * _x1 - _x0;
+		float _y2 = (2 - step * step) * _y1 - _y0;
+
+		DrawPixel4(pDC, _x2, _y2, x_offset, y_offset, col);
+
+		_x0 = _x1;
+		_y0 = _y1;
+		_x1 = _x2;
+		_y1 = _y2;
+	}
+}
+
 void Translate(CDC* pDC, int dx, int dy) {
 	XFORM t = {
 		1, 0,
@@ -194,42 +239,40 @@ void CRGAlgoritmiView::OnDraw(CDC* pDC)
 
 	Translate(pDC, c.Width() / 2, c.Height() / 2);
 
-	PolyEllipse(pDC, 400, 200, RGB(128, 0, 0));
-	PolyEllipse(pDC, 100, 100, RGB(0, 128, 0));
-	PolyEllipse(pDC, 100, 300, RGB(0, 0, 128));
+	//PolyEllipse(pDC, 400, 200, RGB(128, 0, 0));
+	//PolyEllipse(pDC, 100, 100, RGB(0, 128, 0));
+	//PolyEllipse(pDC, 100, 300, RGB(0, 0, 128));
 
-	//NagibniAlgoritam(pDC, 20, 20, 300, 300);
-	//NagibniAlgoritam(pDC, 20, 240, 300, 20);
+	//// m > 0
+	//BresenhamLine(pDC, 0, 0, 200, 200);
+	//
+	//// m < 0
+	//BresenhamLine(pDC, 0, 200, 200, 0);
+	//
+	//// Horizontalna duz
+	//BresenhamLine(pDC, 0, 0, 200, 0);
 
-	
-	// m > 0
-	BresenhamLine(pDC, 0, 0, 200, 200);
-	
-	// m < 0
-	BresenhamLine(pDC, 0, 200, 200, 0);
-	
-	// Horizontalna duz
-	BresenhamLine(pDC, 0, 0, 200, 0);
+	//// Vertikalna duz
+	//BresenhamLine(pDC, 0, 200, 0, 0);
 
-	// Vertikalna duz
-	BresenhamLine(pDC, 0, 200, 0, 0);
+	///*********** Negativne vrednosti ************/
 
-	/*********** Negativne vrednosti ************/
+	//// m > 0
+	//BresenhamLine(pDC, 0, 0, -200, -200);
 
-	// m > 0
-	BresenhamLine(pDC, 0, 0, -200, -200);
+	//// m < 0
+	//BresenhamLine(pDC, 0, -200, -200, 0);
 
-	// m < 0
-	BresenhamLine(pDC, 0, -200, -200, 0);
+	//// Horizontalna duz
+	//BresenhamLine(pDC, 0, 0, -200, 0);
 
-	// Horizontalna duz
-	BresenhamLine(pDC, 0, 0, -200, 0);
+	//// Vertikalna duz
+	//BresenhamLine(pDC, 0, -200, 0, 0);
 
-	// Vertikalna duz
-	BresenhamLine(pDC, 0, -200, 0, 0);
+	//
+	//TrigEllipse(pDC, 300, 0, 500, 300);
 
-	
-	TrigEllipse(pDC, 300, 0, 500, 300);
+	Diff2Ellipse(pDC, 50, 50, 300, 200, RGB(0, 0, 0));
 }
 
 
