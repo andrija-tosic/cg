@@ -93,6 +93,7 @@ void CIKolokvijum2015View::DrawPacman(CDC* pDC, CRect rect, float angle)
 	pDC->GetWorldTransform(&tOld);
 
 	Translate(pDC, middle.x, middle.y);
+	Mirror(pDC, mirrored, false);
 	Rotate(pDC, rot);
 	Translate(pDC, -middle.x, -middle.y);
 
@@ -157,9 +158,9 @@ void CIKolokvijum2015View::OnDraw(CDC* pDC)
 	{
 
 		pozadina.Draw(&memDC, CRect(0, 0, pozadina.Width(), pozadina.Height()), CRect(0, 0, c.Width(), c.Height()));
-		
+
 		POINT ghostMid = { (100 + 196) / 2, (120 + 216) / 2 };
-		POINT pacmanMid = { (400 + 100 + 400 + dx + dx) / 2, (400 + 100 + 400 + dy +dy) / 2 };
+		POINT pacmanMid = { (400 + 100 + 400 + dx + dx) / 2, (400 + 100 + 400 + dy + dy) / 2 };
 
 		CPen white(PS_SOLID, 2, RGB(255, 255, 255));
 		memDC.SelectObject(&white);
@@ -171,9 +172,7 @@ void CIKolokvijum2015View::OnDraw(CDC* pDC)
 
 		CRect pacman(initialX + dx, initialY + dy, initialX + dx + 100, initialY + dy + 100);
 
-		if (mirrored) {
-			Mirror(&memDC, true, false);
-		}
+
 		DrawPacman(&memDC, pacman, 20);
 		memDC.SetWorldTransform(&tOld);
 
@@ -246,7 +245,7 @@ void CIKolokvijum2015View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	POINT ghostMid = { (100 + 196) / 2, (120 + 216) / 2 };
 	POINT pacmanMid = { (400 + 100 + 400 + dx + dx) / 2, (400 + 100 + 400 + dy + dy) / 2 };
 
-	double r1 = sqrt((96/2) * (96/2) + (96/2) * (96/2));
+	double r1 = sqrt((96 / 2) * (96 / 2) + (96 / 2) * (96 / 2));
 	double r2 = sqrt(50 * 50 + 50 * 50);
 
 	double radiusSum = r1 + r2;
@@ -254,7 +253,7 @@ void CIKolokvijum2015View::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 	double xdiff = ghostMid.x - pacmanMid.x;
 	double ydiff = ghostMid.y - pacmanMid.y;
 
-	double distance = sqrt(xdiff*xdiff + ydiff*ydiff);
+	double distance = sqrt(xdiff * xdiff + ydiff * ydiff);
 
 	if (distance <= radiusSum) {
 		collided = true;
