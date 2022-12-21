@@ -6,11 +6,11 @@ class CGLRenderer
 {
 	HGLRC m_hrc;
 
-#define	POZADINA 0.50, 0.75, 1.00
-#define VAZA 0.47, 0.00, 0.00
-#define DEO_KAKTUSA 0.00, 0.80, 0.00
-#define SFERA 1.00, 0.60, 0.00
-#define GRID 1.00, 1.00, 1.00
+#define	POZADINA 0.47, 0.00, 0.00
+#define VAZA 1.00, 1.00, 1.00
+#define DEO_KAKTUSA 0.50, 0.75, 1.00
+#define SFERA 0.00, 0.8, 0.0
+#define GRID 1.00, 0.6, 0.0
 
 
 public:

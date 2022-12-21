@@ -31,7 +31,7 @@ bool CGLRenderer::CreateGLContext(CDC* pDC)
 	pfd.dwFlags = PFD_DOUBLEBUFFER | PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW;
 	pfd.iPixelType = PFD_TYPE_RGBA;
 	pfd.cColorBits = 32;
-	pfd.cDepthBits = 32;
+	pfd.cDepthBits = 24;
 	pfd.iLayerType = PFD_MAIN_PLANE;
 
 	int nPixelFormat = ChoosePixelFormat(pDC->m_hDC, &pfd);
@@ -61,8 +61,9 @@ void CGLRenderer::Reshape(CDC* pDC, int w, int h)
 	{
 		glViewport(0, 0, w, h);
 		glMatrixMode(GL_PROJECTION);
+		glEnable(GL_DEPTH_TEST);
 		glLoadIdentity();
-		gluPerspective(40, (double)w / h, 0, 100);
+		gluPerspective(40, (double)w / h, 1, 100);
 		glMatrixMode(GL_MODELVIEW);
 	}
 	wglMakeCurrent(NULL, NULL);
@@ -72,7 +73,7 @@ void CGLRenderer::DrawScene(CDC* pDC)
 {
 	wglMakeCurrent(pDC->m_hDC, m_hrc);
 	{
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glLoadIdentity();
 
 		gluLookAt(eyex, eyey, eyez,
@@ -210,6 +211,20 @@ void CGLRenderer::DrawCone(double h, double r, int nSeg)
 	}
 	glEnd();
 
+	glBegin(GL_TRIANGLE_FAN);
+	{
+		glVertex3d(0, 0, 0);
+
+		for (int alpha = 0; alpha <= 360; alpha += alphaStep) {
+
+			double x = r * cos(RAD(alpha));
+			double z = r * sin(RAD(alpha));
+
+			glVertex3d(x, 0, z);
+		}
+	}
+	glEnd();
+
 }
 
 void CGLRenderer::DrawAxis(double width)
@@ -261,170 +276,161 @@ void CGLRenderer::DrawFigure(double angle)
 	double sphereR = 0.25;
 
 	glColor3d(VAZA);
-	DrawCylinder(vaseHeight, 1.25, 1, 8);
+	DrawCylinder(vaseHeight, vaseHeight, 1, 8);
 	glTranslated(0, vaseHeight, 0);
 	DrawCylinder(cactusCylinderR, 1.5, 1.4, 8);
 
 	glTranslated(0, 0.4, 0);
-	glRotated(angle, 1, 0, 0);
-	glColor3d(1, 1, 0);
-	DrawCylinder(vaseHeight, 0.5, 0.5, 8);
+	glColor3d(DEO_KAKTUSA);
+	DrawCone(vaseHeight, 0.5, 8);
 
 	glTranslated(0, vaseHeight, 0);
 
 	glTranslated(0, sphereR, 0);
 	glColor3d(SFERA);
-
 	DrawSphere(sphereR, 100, 100);
 
+	double cylinderR = 0.33;
+	double coneR = 0.4;
 
-	// Grana koja pocinje sa valjkom
+	// Gornja grana
 	glPushMatrix();
 	{
-		glTranslated(0, sphereR, sphereR);
-		glRotated(45, 1, 0, 0);
+		glRotated(angle, 1, 0, 0);
+		glTranslated(0, sphereR, 0);
 
-		glColor3d(DEO_KAKTUSA);
-		DrawCylinder(vaseHeight * 0.9, cactusCylinderR, cactusCylinderR, 8);
+		glColor3d(1, 1, 0);
+		DrawCylinder(vaseHeight, cylinderR, cylinderR, 8);
 
-		glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
+		glTranslated(0, vaseHeight + sphereR, 0);
 		glColor3d(SFERA);
 		DrawSphere(sphereR, 100, 100);
 
-		glRotated(-45, 1, 0, 0);
+		glTranslated(0, sphereR, 0);
+		glColor3d(DEO_KAKTUSA);
+		DrawCone(vaseHeight, coneR, 8);
 
-		// Dva valjka za redom
-		glPushMatrix();
-		{
-			glRotated(90, 1, 0, 0);
-			glTranslated(0, sphereR, 0);
-			glColor3d(DEO_KAKTUSA);
-			DrawCylinder(vaseHeight * 0.9, cactusCylinderR, cactusCylinderR, 8);
-
-
-			glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-			
-			glColor3d(SFERA);
-			DrawSphere(sphereR, 100, 100);
-
-			glTranslated(0, sphereR, 0);
-			glColor3d(DEO_KAKTUSA);
-			DrawCylinder(vaseHeight * 0.9, cactusCylinderR, cactusCylinderR, 8);
-
-
-			glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-			glColor3d(SFERA);
-			DrawSphere(sphereR, 100, 100);
-		}
-		glPopMatrix();
-
-		// Kupa iznad
-		glPushMatrix();
-		{
-			glTranslated(0, sphereR, 0);
-			glColor3d(DEO_KAKTUSA);
-			DrawCone(vaseHeight * 0.9, sphereR * 1.2, 8);
-
-			glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-			glColor3d(SFERA);
-			DrawSphere(sphereR, 100, 100);
-
-		}
-		glPopMatrix();
-
-
+		glTranslated(0, vaseHeight + sphereR, 0);
+		glColor3d(SFERA);
+		DrawSphere(sphereR, 100, 100);
 	}
 	glPopMatrix();
 
-	// Grana koja pocinje sa kupom
+
+	// Desna grana
 	glPushMatrix();
 	{
-		glTranslated(0, sphereR, -sphereR);
 		glRotated(-45, 1, 0, 0);
 
+		glTranslated(0, sphereR, 0);
 		glColor3d(DEO_KAKTUSA);
-		DrawCone(vaseHeight * 0.9, sphereR * 1.2, 8);
+		DrawCylinder(vaseHeight, cylinderR, cylinderR, 8);
 
-		glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-
+		glTranslated(0, vaseHeight + sphereR, 0);	
 		glColor3d(SFERA);
 		DrawSphere(sphereR, 100, 100);
 
-		// Horizontalni valjak
-		glPushMatrix();
-		{
-			glRotated(-45, 1, 0, 0);
+		glTranslated(0, sphereR, 0);
+		glColor3d(DEO_KAKTUSA);
+		DrawCone(vaseHeight, coneR, 8);
 
-			glTranslated(0, sphereR, 0);
+		glTranslated(0, vaseHeight + sphereR, 0);
+		glColor3d(SFERA);
+		DrawSphere(sphereR, 100, 100);
+	}
+	glPopMatrix();
 
-			glColor3d(DEO_KAKTUSA);
-			DrawCylinder(vaseHeight * 0.9, cactusCylinderR, cactusCylinderR, 8);
+	// Leva grana
+	glPushMatrix();
+	{
+		glRotated(45, 1, 0, 0);
 
-			glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-			glColor3d(SFERA);
-			DrawSphere(sphereR, 100, 100);
+		glTranslated(0, sphereR, 0);
+		glColor3d(DEO_KAKTUSA);
+		DrawCone(vaseHeight, coneR, 8);
 
-			// Gornji valjak
-			glPushMatrix();
-			{
-				glRotated(45, 1, 0, 0);
+		glTranslated(0, vaseHeight + sphereR, 0);
+		glColor3d(SFERA);
+		DrawSphere(sphereR, 100, 100);
 
-				glTranslated(0, sphereR, 0);
 
-				glColor3d(DEO_KAKTUSA);
-				DrawCylinder(vaseHeight * 0.9, cactusCylinderR, cactusCylinderR, 8);
-
-				glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-				glColor3d(SFERA);
-				DrawSphere(sphereR, 100, 100);
-			}
-			glPopMatrix();
-
-			// Donji valjak
-			glPushMatrix();
-			{
-				glRotated(-45, 1, 0, 0);
-
-				glTranslated(0, sphereR, 0);
-
-				glColor3d(DEO_KAKTUSA);
-				DrawCylinder(vaseHeight * 0.9, cactusCylinderR, cactusCylinderR, 8);
-
-				glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-				glColor3d(SFERA);
-				DrawSphere(sphereR, 100, 100);
-
-			}
-			glPopMatrix();
-
-		}
-		glPopMatrix();
-
-		// Dve kupe iznad za redom
+		// Grana levo
 		glPushMatrix();
 		{
 			glRotated(45, 1, 0, 0);
 
 			glTranslated(0, sphereR, 0);
-			glColor3d(DEO_KAKTUSA);
-			DrawCone(vaseHeight * 0.9, sphereR * 1.2, 8);
 
-			glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
+			glColor3d(DEO_KAKTUSA);
+			DrawCone(vaseHeight, coneR, 8);
+
+			glTranslated(0, vaseHeight + sphereR, 0);
 			glColor3d(SFERA);
 			DrawSphere(sphereR, 100, 100);
-
-			glTranslated(0, sphereR, 0);
-			glColor3d(DEO_KAKTUSA);
-			DrawCone(vaseHeight * 0.9, sphereR * 1.2, 8);
-
-			glTranslated(0, vaseHeight * 0.9 + sphereR, 0);
-			glColor3d(SFERA);
-			DrawSphere(sphereR, 100, 100);
-
 
 		}
 		glPopMatrix();
 
+		// Grana iznad
+		glPushMatrix();
+		{
+			glRotated(-45, 1, 0, 0);
+
+			glTranslated(0, sphereR, 0);
+			glColor3d(DEO_KAKTUSA);
+			DrawCylinder(vaseHeight, cylinderR, cylinderR, 8);
+
+			glTranslated(0, vaseHeight+sphereR, 0);
+			glColor3d(SFERA);
+			DrawSphere(sphereR, 100, 100);
+
+			// Leva kupa
+			glPushMatrix();
+			{
+				glRotated(45, 1, 0, 0);
+
+				glTranslated(0, sphereR, 0);
+				glColor3d(DEO_KAKTUSA);
+				DrawCone(vaseHeight, coneR, 8);
+
+				glTranslated(0, vaseHeight+sphereR, 0);
+				glColor3d(SFERA);
+				DrawSphere(sphereR, 100, 100);
+			}
+			glPopMatrix();
+
+			// Kupa iznad
+			glPushMatrix();
+			{
+				glTranslated(0, sphereR, 0);
+				glColor3d(DEO_KAKTUSA);
+				DrawCone(vaseHeight, coneR, 8);
+
+				glTranslated(0, vaseHeight + sphereR, 0);
+				glColor3d(SFERA);
+				DrawSphere(sphereR, 100, 100);
+
+			}
+			glPopMatrix();
+
+			// Valjak desno
+			glPushMatrix();
+			{
+				glRotated(-45, 1, 0, 0);
+
+				glTranslated(0, sphereR, 0);
+				glColor3d(DEO_KAKTUSA);
+				DrawCylinder(vaseHeight, cylinderR, cylinderR, 8);
+
+				glTranslated(0, vaseHeight + sphereR, 0);
+				glColor3d(SFERA);
+				DrawSphere(sphereR, 100, 100);
+
+			}
+			glPopMatrix();
+
+		}
+		glPopMatrix();
 	}
 	glPopMatrix();
 }
@@ -432,17 +438,20 @@ void CGLRenderer::DrawFigure(double angle)
 void CGLRenderer::RotateView(double dXY, double dXZ)
 {
 	this->viewAngleXY += dXY;
+	viewAngleXY = min(90, viewAngleXY);
+	viewAngleXY = max(-90, viewAngleXY);
+
 	this->viewAngleXZ += dXZ;
 	this->CalculatePosition();
 }
 
 void CGLRenderer::CalculatePosition()
-{
+{	
 	double dWXY = this->viewAngleXY * 3.14 / 180,
 		dWXZ = this->viewAngleXZ * 3.14 / 180;
 
 	this->eyex = this->viewR * cos(dWXY) * cos(dWXZ);
-	this->eyey = 0 + this->viewR * sin(dWXY);
+	this->eyey = this->viewR * sin(dWXY);
 	this->eyez = this->viewR * cos(dWXY) * sin(dWXZ);
 
 	this->upy = signbit(cos(dWXY)) ? -1 : 1;
