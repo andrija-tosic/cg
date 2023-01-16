@@ -5,17 +5,18 @@ CGLMaterial::CGLMaterial()
 {
 	m_vAmbient[0] = 0.2; m_vAmbient[1] = 0.2;
 	m_vAmbient[2] = 0.2; m_vAmbient[3] = 1.0;
+
 	m_vDiffuse[0] = 0.2; m_vDiffuse[1] = 0.8;
 	m_vDiffuse[2] = 0.2; m_vDiffuse[3] = 1.0;
 
 	m_vSpecular[0] = 1.0; m_vSpecular[1] = 1.0;
 	m_vSpecular[2] = 1.0; m_vSpecular[3] = 1.0;
+	
 	m_vEmission[0] = 0.0; m_vEmission[1] = 0.0;
 	m_vEmission[2] = 0.0; m_vEmission[3] = 1.0;
 
 	m_fShininess = 64.0;
 }
-
 
 void CGLMaterial::SetFace(GLenum face)
 {

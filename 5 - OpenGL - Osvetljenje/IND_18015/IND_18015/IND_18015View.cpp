@@ -205,7 +205,7 @@ void CIND18015View::OnMouseMove(UINT nFlags, CPoint point)
 
 		double sensitivity = 1 / 4.0;
 
-		m_glRenderer.RotateView(diffy * sensitivity, diffx * sensitivity);
+		m_glRenderer.RotateCamera(diffy * sensitivity, diffx * sensitivity);
 		Invalidate();
 
 	}
